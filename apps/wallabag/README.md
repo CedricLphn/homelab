@@ -1,14 +1,151 @@
-# Wallabag Kustomize Chart
+# Wallabag
+
+[English](#english) | [Français](#français)
+
+---
+
+## English
+
+Kubernetes deployment of Wallabag with Kustomize, integrating Bitwarden External Secrets Operator and Tailscale Operator.
+
+### Architecture
+
+- **Wallabag**: Web article saving and reading application (read-it-later)
+- **PostgreSQL**: Database
+- **Redis**: Cache and task queue
+
+### Prerequisites
+
+- Kubernetes cluster (Talos Linux)
+- Kustomize
+- Bitwarden External Secrets Operator configured with a `ClusterSecretStore` named `bitwarden-cluster-secretstore`
+- Tailscale Operator installed
+- StorageClass `local-path` configured
+
+### Bitwarden Secrets
+
+Create the following secrets in Bitwarden Secret Manager (key: value):
+
+#### wallabag-db-username
+```
+key: wallabag-db-username
+value: <db-username>
+```
+
+#### wallabag-db-password
+```
+key: wallabag-db-password
+value: <db-password>
+```
+
+#### wallabag-secret-key
+```
+key: wallabag-secret-key
+value: <random-symfony-secret-key>
+```
+
+**IMPORTANT**: Secrets (secret key and passwords) must NOT contain the following characters that cause issues with Symfony: `&`, `%`, `=`. Additionally, do NOT start a secret with `#` as it would be interpreted as a comment. Use only alphanumeric characters, `-`, `_`, `~`, `@`, `!`, `*`, `/`, `+` and `#` (but not at the beginning of the string).
+
+### Wallabag Configuration
+
+#### Main Environment Variables
+
+Modify `base/wallabag-deployment.yaml`:
+
+- `SYMFONY__ENV__DOMAIN_NAME`: Tailscale URL of your instance
+- `SYMFONY__ENV__LOCALE`: Language (default: fr)
+- `SYMFONY__ENV__FOSUSER_REGISTRATION`: true to allow public registration
+- `SYMFONY__ENV__FOSUSER_CONFIRMATION`: true to send confirmation email
+- `SYMFONY__ENV__FROM_EMAIL`: Email address for outgoing messages (activation, etc.)
+
+#### Storage
+
+Modify sizes in `base/pvc.yaml`:
+
+- `wallabag-data`: 10Gi (SQLite database if used, cache)
+- `wallabag-images`: 20Gi (locally downloaded images)
+- `postgres-data`: 10Gi
+- `redis-data`: 1Gi
+
+### Deployment
+
+```bash
+kubectl apply -k base/
+```
+
+### Access
+
+The application is exposed via Tailscale Operator.
+
+To get the Tailscale URL:
+```bash
+kubectl get ingress -n wallabag
+```
+
+Access URL: `https://wallabag.tail3161aa.ts.net`
+
+### Initial Configuration
+
+During first login:
+1. Create a user account (if registration enabled) or use default credentials: `wallabag:wallabag`
+2. Change the default password
+3. Configure application settings in preferences
+
+### Features
+
+- Save web articles for offline reading
+- RSS feed support
+- Tags and categories
+- Export to ePub, PDF, MOBI, etc.
+- Mobile applications available (iOS/Android)
+- Browser extensions (Chrome, Firefox)
+- Import from Pocket, Instapaper, etc.
+
+### Maintenance
+
+#### Backups
+
+Backup the PVCs:
+- `wallabag-data`
+- `wallabag-images`
+- `postgres-data`
+
+#### Update
+
+```bash
+kubectl rollout restart deployment/wallabag -n wallabag
+```
+
+#### Logs
+
+```bash
+kubectl logs -f deployment/wallabag -n wallabag
+```
+
+#### Database Migration
+
+If an update requires a database migration:
+```bash
+kubectl exec -n wallabag deployment/wallabag -- /var/www/wallabag/bin/console doctrine:migrations:migrate --env=prod --no-interaction
+```
+
+### Support
+
+Official documentation: https://doc.wallabag.org/
+
+---
+
+## Français
 
 Déploiement Kubernetes de Wallabag avec Kustomize, intégrant Bitwarden External Secrets Operator et Tailscale Operator.
 
-## Architecture
+### Architecture
 
 - **Wallabag**: Application de sauvegarde et lecture d'articles web (read-it-later)
 - **PostgreSQL**: Base de données
 - **Redis**: Cache et file d'attente de tâches
 
-## Prérequis
+### Prérequis
 
 - Cluster Kubernetes (Talos Linux)
 - Kustomize
@@ -16,23 +153,23 @@ Déploiement Kubernetes de Wallabag avec Kustomize, intégrant Bitwarden Externa
 - Tailscale Operator installé
 - StorageClass `local-path` configurée
 
-## Secrets Bitwarden
+### Secrets Bitwarden
 
 Créer les secrets suivants dans Bitwarden Secret Manager (key: value):
 
-### wallabag-db-username
+#### wallabag-db-username
 ```
 key: wallabag-db-username
 value: <db-username>
 ```
 
-### wallabag-db-password
+#### wallabag-db-password
 ```
 key: wallabag-db-password
 value: <db-password>
 ```
 
-### wallabag-secret-key
+#### wallabag-secret-key
 ```
 key: wallabag-secret-key
 value: <symfony-secret-key-aleatoire>
@@ -40,9 +177,9 @@ value: <symfony-secret-key-aleatoire>
 
 **IMPORTANT**: Les secrets (clé secrète et mots de passe) ne doivent PAS contenir les caractères suivants qui posent problème avec Symfony : `&`, `%`, `=`. De plus, ne commencez PAS un secret par `#` car il serait interprété comme un commentaire. Utilisez uniquement des caractères alphanumériques, `-`, `_`, `~`, `@`, `!`, `*`, `/`, `+` et `#` (mais pas en début de chaîne).
 
-## Configuration Wallabag
+### Configuration Wallabag
 
-### Variables d'environnement principales
+#### Variables d'environnement principales
 
 Modifier `base/wallabag-deployment.yaml`:
 
@@ -52,7 +189,7 @@ Modifier `base/wallabag-deployment.yaml`:
 - `SYMFONY__ENV__FOSUSER_CONFIRMATION`: true pour envoyer un email de confirmation
 - `SYMFONY__ENV__FROM_EMAIL`: Adresse email pour les envois (activation, etc.)
 
-### Stockage
+#### Stockage
 
 Modifier les tailles dans `base/pvc.yaml`:
 
@@ -61,13 +198,13 @@ Modifier les tailles dans `base/pvc.yaml`:
 - `postgres-data`: 10Gi
 - `redis-data`: 1Gi
 
-## Déploiement
+### Déploiement
 
 ```bash
 kubectl apply -k base/
 ```
 
-## Accès
+### Accès
 
 L'application est exposée via Tailscale Operator.
 
@@ -78,14 +215,14 @@ kubectl get ingress -n wallabag
 
 URL d'accès : `https://wallabag.tail3161aa.ts.net`
 
-## Configuration initiale
+### Configuration initiale
 
 Lors de la première connexion:
 1. Créer un compte utilisateur (si registration activée) ou utiliser les credentials par défaut: `wallabag:wallabag`
 2. Modifier le mot de passe par défaut
 3. Configurer les paramètres de l'application dans les réglages
 
-## Fonctionnalités
+### Fonctionnalités
 
 - Sauvegarde d'articles web pour lecture hors ligne
 - Support des flux RSS
@@ -95,34 +232,34 @@ Lors de la première connexion:
 - Extensions navigateur (Chrome, Firefox)
 - Import depuis Pocket, Instapaper, etc.
 
-## Maintenance
+### Maintenance
 
-### Sauvegardes
+#### Sauvegardes
 
 Sauvegarder les PVCs:
 - `wallabag-data`
 - `wallabag-images`
 - `postgres-data`
 
-### Mise à jour
+#### Mise à jour
 
 ```bash
 kubectl rollout restart deployment/wallabag -n wallabag
 ```
 
-### Logs
+#### Logs
 
 ```bash
 kubectl logs -f deployment/wallabag -n wallabag
 ```
 
-### Migration de base de données
+#### Migration de base de données
 
 Si une mise à jour nécessite une migration de base de données:
 ```bash
 kubectl exec -n wallabag deployment/wallabag -- /var/www/wallabag/bin/console doctrine:migrations:migrate --env=prod --no-interaction
 ```
 
-## Support
+### Support
 
 Documentation officielle: https://doc.wallabag.org/
