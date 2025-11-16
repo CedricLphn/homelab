@@ -1,0 +1,138 @@
+version: v1alpha1
+debug: false
+persist: true
+
+machine:
+    type: controlplane
+    token: <REDACTED> # Generated during 'talosctl gen config'
+
+    ca:
+        crt: <REDACTED> # Machine CA certificate (auto-generated)
+        key: <REDACTED> # Machine CA private key (auto-generated)
+
+    certSANs: []
+    # Add additional SANs for your control plane endpoint:
+    #   - <YOUR-CONTROL-PLANE-IP>
+    #   - your-domain.com
+
+    kubelet:
+        image: ghcr.io/siderolabs/kubelet:v1.34.0
+        defaultRuntimeSeccompProfileEnabled: true
+        disableManifestsDirectory: true
+
+        # Extra mount for local-path-provisioner storage
+        extraMounts:
+            - destination: /var/lib/local-path-provisioner
+              type: bind
+              source: /var/lib/local-path-provisioner
+              options:
+                - bind
+                - rshared
+                - rw
+
+        nodeIP:
+            validSubnets:
+                - 10.0.0.0/8  # Adjust to your network
+
+    network: {}
+
+    install:
+        disk: /dev/sda  # Adjust to your disk device
+        image: ghcr.io/siderolabs/installer:v1.11.1
+        wipe: false
+
+    features:
+        rbac: true
+        stableHostname: true
+        apidCheckExtKeyUsage: true
+        diskQuotaSupport: true
+        kubePrism:
+            enabled: true
+            port: 7445
+        hostDNS:
+            enabled: true
+            forwardKubeDNSToHost: true
+
+cluster:
+    id: <REDACTED> # Cluster ID (auto-generated)
+    secret: <REDACTED> # Cluster secret (auto-generated)
+
+    controlPlane:
+        endpoint: https://<YOUR-CONTROL-PLANE-IP>:6443  # Change to your control plane IP
+
+    clusterName: my-cluster  # Your cluster name
+
+    network:
+        cni:
+            name: none  # CNI will be installed separately (Flannel, Cilium, etc.)
+        dnsDomain: cluster.local
+        podSubnets:
+            - 10.244.0.0/16
+        serviceSubnets:
+            - 10.96.0.0/12
+
+    token: <REDACTED> # Bootstrap token (auto-generated)
+
+    secretboxEncryptionSecret: <REDACTED> # Secretbox encryption secret (auto-generated)
+
+    ca:
+        crt: <REDACTED> # Kubernetes CA certificate (auto-generated)
+        key: <REDACTED> # Kubernetes CA private key (auto-generated)
+
+    aggregatorCA:
+        crt: <REDACTED> # Aggregator CA certificate (auto-generated)
+        key: <REDACTED> # Aggregator CA private key (auto-generated)
+
+    serviceAccount:
+        key: <REDACTED> # Service account key (auto-generated)
+
+    apiServer:
+        image: registry.k8s.io/kube-apiserver:v1.34.0
+        certSANs: []
+        # Add SANs for your API server:
+        #   - <YOUR-CONTROL-PLANE-IP>
+        disablePodSecurityPolicy: true
+        admissionControl:
+            - name: PodSecurity
+              configuration:
+                apiVersion: pod-security.admission.config.k8s.io/v1alpha1
+                kind: PodSecurityConfiguration
+                defaults:
+                    enforce: baseline
+                    enforce-version: latest
+                    audit: restricted
+                    audit-version: latest
+                    warn: restricted
+                    warn-version: latest
+                exemptions:
+                    usernames: []
+                    runtimeClasses: []
+                    namespaces:
+                        - kube-system
+
+    controllerManager:
+        image: registry.k8s.io/kube-controller-manager:v1.34.0
+
+    proxy:
+        image: registry.k8s.io/kube-proxy:v1.34.0
+
+    scheduler:
+        image: registry.k8s.io/kube-scheduler:v1.34.0
+
+    discovery:
+        enabled: true
+        registries:
+            kubernetes:
+                disabled: false
+            service:
+                disabled: false
+
+    etcd:
+        ca:
+            crt: <REDACTED> # Etcd CA certificate (auto-generated)
+            key: <REDACTED> # Etcd CA private key (auto-generated)
+
+    coreDNS:
+        image: registry.k8s.io/coredns/coredns:v1.12.0
+
+    allowSchedulingOnControlPlanes: true

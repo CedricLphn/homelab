@@ -1,0 +1,16 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: bitwarden-sdk-server
+  namespace: external-secrets-system
+spec:
+  secretName: bitwarden-sdk-server-tls
+  issuerRef:
+    name: selfsigned-issuer  # Create a self-signed issuer first
+    kind: ClusterIssuer
+  commonName: bitwarden-sdk-server.external-secrets-system.svc.cluster.local
+  dnsNames:
+    - bitwarden-sdk-server
+    - bitwarden-sdk-server.external-secrets-system
+    - bitwarden-sdk-server.external-secrets-system.svc
+    - bitwarden-sdk-server.external-secrets-system.svc.cluster.local

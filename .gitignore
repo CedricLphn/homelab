@@ -1,0 +1,70 @@
+# Private directory - contains ALL sensitive configurations
+private/
+
+# Talos sensitive configurations (redundant with private/, but explicit)
+controlplane.yaml
+worker.yaml
+talosconfig
+*.secret.yaml
+
+# Kubernetes configurations
+.kube/
+kubeconfig
+*.kubeconfig
+
+# Bitwarden / External Secrets sensitive configs
+bitwarden-*.yaml
+bitwardem-cert.yaml
+
+# Helm values that may contain secrets
+*-values.yaml
+
+# Talos patches (may contain sensitive network configs)
+patch.yml
+patches/*.yml
+
+# Temporary diagnostic files
+CLUSTER-STATUS.md
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Terraform (if used in future)
+*.tfstate
+*.tfstate.backup
+.terraform/
+
+# Ansible (if used in future)
+*.retry
+
+# Backup files
+*.backup
+*.bak
+*.old
+
+# Logs
+*.log
+logs/
+
+# Certificates and keys
+*.key
+*.crt
+*.pem
+*.p12
+*.pfx
+ca.crt
+ca.key
+
+# Environment files
+.env
+.env.local
+.env.*.local

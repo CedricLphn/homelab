@@ -1,0 +1,81 @@
+version: v1alpha1
+debug: false
+persist: true
+
+machine:
+    type: worker
+    token: <REDACTED> # Same token as controlplane (generated during 'talosctl gen config')
+
+    ca:
+        crt: <REDACTED> # Same Machine CA certificate as controlplane (auto-generated)
+
+    certSANs: []
+
+    kubelet:
+        image: ghcr.io/siderolabs/kubelet:v1.34.0
+        defaultRuntimeSeccompProfileEnabled: true
+        disableManifestsDirectory: true
+
+        # Extra mount for local-path-provisioner storage
+        extraMounts:
+            - destination: /var/lib/local-path-provisioner
+              type: bind
+              source: /var/lib/local-path-provisioner
+              options:
+                - bind
+                - rshared
+                - rw
+
+        nodeIP:
+            validSubnets:
+                - 10.0.0.0/8  # Adjust to your network
+
+    network: {}
+
+    install:
+        disk: /dev/sda  # Adjust to your disk device
+        image: ghcr.io/siderolabs/installer:v1.11.1
+        wipe: false
+
+    features:
+        rbac: true
+        stableHostname: true
+        apidCheckExtKeyUsage: true
+        diskQuotaSupport: true
+        kubePrism:
+            enabled: true
+            port: 7445
+        hostDNS:
+            enabled: true
+            forwardKubeDNSToHost: true
+
+cluster:
+    id: <REDACTED> # Same cluster ID as controlplane (auto-generated)
+    secret: <REDACTED> # Same cluster secret as controlplane (auto-generated)
+
+    controlPlane:
+        endpoint: https://<YOUR-CONTROL-PLANE-IP>:6443  # Change to your control plane IP
+
+    clusterName: my-cluster  # Same cluster name as controlplane
+
+    network:
+        cni:
+            name: none  # CNI will be installed separately
+        dnsDomain: cluster.local
+        podSubnets:
+            - 10.244.0.0/16
+        serviceSubnets:
+            - 10.96.0.0/12
+
+    token: <REDACTED> # Same bootstrap token as controlplane (auto-generated)
+
+    ca:
+        crt: <REDACTED> # Same Kubernetes CA certificate as controlplane (auto-generated)
+
+    discovery:
+        enabled: true
+        registries:
+            kubernetes:
+                disabled: false
+            service:
+                disabled: false

@@ -1,0 +1,15 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: wallabag
+  namespace: wallabag
+spec:
+  ingressClassName: tailscale
+  defaultBackend:
+    service:
+      name: wallabag
+      port:
+        number: 80
+  tls:
+  - hosts:
+    - wallabag

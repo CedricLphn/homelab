@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: immich
+
+resources:
+- namespace.yaml
+- pvc.yaml
+- postgres-deployment.yaml
+- postgres-service.yaml
+- redis-deployment.yaml
+- redis-service.yaml
+- immich-machine-learning-deployment.yaml
+- immich-machine-learning-service.yaml
+- immich-server-deployment.yaml
+- immich-server-service.yaml
+- external-secrets.yaml
+- tailscale-ingress.yaml
+
+commonLabels:
+  app.kubernetes.io/part-of: immich
