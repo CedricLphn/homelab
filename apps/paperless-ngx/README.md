@@ -95,7 +95,7 @@ identity_providers:
         public: false
         authorization_policy: two_factor
         redirect_uris:
-          - https://paperless.tail3161aa.ts.net/accounts/openid_connect/authelia/login/callback/
+          - https://paperless.<your-tailnet-id>.ts.net/accounts/openid_connect/authelia/login/callback/
         scopes:
           - openid
           - profile
@@ -113,7 +113,7 @@ To restrict access to the "paperless" group only:
 ```yaml
 access_control:
   rules:
-    - domain: paperless.tail3161aa.ts.net
+    - domain: paperless.<your-tailnet-id>.ts.net
       policy: two_factor
       subject:
         - "group:paperless"
@@ -157,7 +157,7 @@ To get the Tailscale URL:
 kubectl get ingress -n paperless-ngx
 ```
 
-Access URL: `https://paperless.tail3161aa.ts.net`
+Access URL: `https://paperless.<your-tailnet-id>.ts.net`
 
 ### First OAuth User
 
@@ -287,7 +287,7 @@ identity_providers:
         public: false
         authorization_policy: two_factor
         redirect_uris:
-          - https://paperless.tail3161aa.ts.net/accounts/openid_connect/authelia/login/callback/
+          - https://paperless.<your-tailnet-id>.ts.net/accounts/openid_connect/authelia/login/callback/
         scopes:
           - openid
           - profile
@@ -305,7 +305,7 @@ Pour restreindre l'accès au groupe "paperless" uniquement :
 ```yaml
 access_control:
   rules:
-    - domain: paperless.tail3161aa.ts.net
+    - domain: paperless.<your-tailnet-id>.ts.net
       policy: two_factor
       subject:
         - "group:paperless"
@@ -349,7 +349,7 @@ Pour obtenir l'URL Tailscale:
 kubectl get ingress -n paperless-ngx
 ```
 
-URL d'accès : `https://paperless.tail3161aa.ts.net`
+URL d'accès : `https://paperless.<your-tailnet-id>.ts.net`
 
 ### Premier utilisateur OAuth
 

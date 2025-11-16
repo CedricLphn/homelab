@@ -46,7 +46,7 @@ spec:
               name: wallabag-secret
               key: secret-key
         - name: SYMFONY__ENV__DOMAIN_NAME
-          value: https://wallabag.tail3161aa.ts.net
+          value: https://wallabag.<your-tailnet-id>.ts.net
         - name: SYMFONY__ENV__LOCALE
           value: fr
         - name: SYMFONY__ENV__MAILER_DSN

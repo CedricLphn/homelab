@@ -56,9 +56,9 @@ spec:
               name: paperless-admin-secret
               key: password
         - name: PAPERLESS_URL
-          value: https://paperless.tail3161aa.ts.net
+          value: https://paperless.<your-tailnet-id>.ts.net
         - name: PAPERLESS_CSRF_TRUSTED_ORIGINS
-          value: https://paperless.tail3161aa.ts.net
+          value: https://paperless.<your-tailnet-id>.ts.net
         - name: PAPERLESS_TIKA_ENABLED
           value: "true"
         - name: PAPERLESS_TIKA_ENDPOINT

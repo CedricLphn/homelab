@@ -34,7 +34,7 @@ Add the following client to Authelia configuration (`identity_providers.oidc.cli
   public: false
   authorization_policy: 'two_factor'
   redirect_uris:
-    - 'https://miniflux.tail3161aa.ts.net/oauth2/oidc/callback'
+    - 'https://miniflux.<your-tailnet-id>.ts.net/oauth2/oidc/callback'
   scopes:
     - 'openid'
     - 'profile'
@@ -124,7 +124,7 @@ To get the Tailscale URL:
 kubectl get ingress -n miniflux
 ```
 
-Access URL: `https://miniflux.tail3161aa.ts.net`
+Access URL: `https://miniflux.<your-tailnet-id>.ts.net`
 
 ### Initial Configuration
 
@@ -232,7 +232,7 @@ Ajouter le client suivant dans la configuration Authelia (`identity_providers.oi
   public: false
   authorization_policy: 'two_factor'
   redirect_uris:
-    - 'https://miniflux.tail3161aa.ts.net/oauth2/oidc/callback'
+    - 'https://miniflux.<your-tailnet-id>.ts.net/oauth2/oidc/callback'
   scopes:
     - 'openid'
     - 'profile'
@@ -322,7 +322,7 @@ Pour obtenir l'URL Tailscale:
 kubectl get ingress -n miniflux
 ```
 
-URL d'accès : `https://miniflux.tail3161aa.ts.net`
+URL d'accès : `https://miniflux.<your-tailnet-id>.ts.net`
 
 ### Configuration initiale
 

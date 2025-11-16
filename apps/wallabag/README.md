@@ -82,7 +82,7 @@ To get the Tailscale URL:
 kubectl get ingress -n wallabag
 ```
 
-Access URL: `https://wallabag.tail3161aa.ts.net`
+Access URL: `https://wallabag.<your-tailnet-id>.ts.net`
 
 ### Initial Configuration
 
@@ -213,7 +213,7 @@ Pour obtenir l'URL Tailscale:
 kubectl get ingress -n wallabag
 ```
 
-URL d'accès : `https://wallabag.tail3161aa.ts.net`
+URL d'accès : `https://wallabag.<your-tailnet-id>.ts.net`
 
 ### Configuration initiale
 

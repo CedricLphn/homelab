@@ -25,6 +25,7 @@ This repository contains the complete infrastructure-as-code for my personal hom
 
 | Application | Description | Authentication | Storage |
 |-------------|-------------|----------------|---------|
+| [ArgoCD](https://argo-cd.readthedocs.io/) | GitOps continuous delivery | OIDC (Authelia) + Local admin | - |
 | [Immich](https://immich.app/) | Photo and video management (Google Photos alternative) | Local + Tailscale | 500Gi library + PostgreSQL |
 | [Paperless-ngx](https://docs.paperless-ngx.com/) | Document management system | OAuth (Authelia) | 50Gi media + PostgreSQL |
 | [Wallabag](https://wallabag.org/) | Read-it-later service (Pocket alternative) | Local | 20Gi images + PostgreSQL |
@@ -52,6 +53,7 @@ homelab/
 │       └── external-secrets/    # Secret management setup
 │
 ├── apps/                        # Application deployments
+│   ├── argocd/                  # GitOps continuous delivery
 │   ├── immich/
 │   ├── paperless-ngx/
 │   ├── wallabag/
@@ -156,6 +158,7 @@ Ce dépôt contient l'infrastructure complète de mon homelab personnel, fonctio
 
 | Application | Description | Authentification | Stockage |
 |-------------|-------------|------------------|----------|
+| [ArgoCD](https://argo-cd.readthedocs.io/) | Livraison continue GitOps | OIDC (Authelia) + Admin local | - |
 | [Immich](https://immich.app/) | Gestion de photos et vidéos (alternative à Google Photos) | Local + Tailscale | 500Gi bibliothèque + PostgreSQL |
 | [Paperless-ngx](https://docs.paperless-ngx.com/) | Système de gestion documentaire | OAuth (Authelia) | 50Gi média + PostgreSQL |
 | [Wallabag](https://wallabag.org/) | Service "lire plus tard" (alternative à Pocket) | Local | 20Gi images + PostgreSQL |
@@ -183,6 +186,7 @@ homelab/
 │       └── external-secrets/    # Configuration de la gestion des secrets
 │
 ├── apps/                        # Déploiements d'applications
+│   ├── argocd/                  # Livraison continue GitOps
 │   ├── immich/
 │   ├── paperless-ngx/
 │   ├── wallabag/
