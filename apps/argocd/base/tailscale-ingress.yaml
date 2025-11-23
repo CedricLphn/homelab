@@ -3,6 +3,8 @@ kind: Ingress
 metadata:
   name: argocd-server-ingress
   namespace: argocd
+  annotations:
+    tailscale.com/hostname: argocd.tail<your-tailnet-id>.ts.net
 spec:
   ingressClassName: tailscale
   rules:

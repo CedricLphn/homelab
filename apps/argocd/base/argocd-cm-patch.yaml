@@ -22,6 +22,8 @@ data:
 
   admin.enabled: "true"
 
+  server.insecure: "true"
+
   repositories: |
     - type: git
       url: https://github.com/your-username/homelab.git

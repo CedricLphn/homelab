@@ -26,6 +26,7 @@ This repository contains the complete infrastructure-as-code for my personal hom
 | Application | Description | Authentication | Storage |
 |-------------|-------------|----------------|---------|
 | [ArgoCD](https://argo-cd.readthedocs.io/) | GitOps continuous delivery | OIDC (Authelia) + Local admin | - |
+| [Stirling-PDF](https://stirlingtools.com/) | PDF manipulation toolkit | - | 2Gi |
 | [Immich](https://immich.app/) | Photo and video management (Google Photos alternative) | Local + Tailscale | 500Gi library + PostgreSQL |
 | [Paperless-ngx](https://docs.paperless-ngx.com/) | Document management system | OAuth (Authelia) | 50Gi media + PostgreSQL |
 | [Wallabag](https://wallabag.org/) | Read-it-later service (Pocket alternative) | Local | 20Gi images + PostgreSQL |
@@ -54,6 +55,7 @@ homelab/
 │
 ├── apps/                        # Application deployments
 │   ├── argocd/                  # GitOps continuous delivery
+│   ├── stirling-pdf/            # PDF manipulation toolkit
 │   ├── immich/
 │   ├── paperless-ngx/
 │   ├── wallabag/
@@ -159,6 +161,7 @@ Ce dépôt contient l'infrastructure complète de mon homelab personnel, fonctio
 | Application | Description | Authentification | Stockage |
 |-------------|-------------|------------------|----------|
 | [ArgoCD](https://argo-cd.readthedocs.io/) | Livraison continue GitOps | OIDC (Authelia) + Admin local | - |
+| [Stirling-PDF](https://stirlingtools.com/) | Boîte à outils PDF | - | 2Gi |
 | [Immich](https://immich.app/) | Gestion de photos et vidéos (alternative à Google Photos) | Local + Tailscale | 500Gi bibliothèque + PostgreSQL |
 | [Paperless-ngx](https://docs.paperless-ngx.com/) | Système de gestion documentaire | OAuth (Authelia) | 50Gi média + PostgreSQL |
 | [Wallabag](https://wallabag.org/) | Service "lire plus tard" (alternative à Pocket) | Local | 20Gi images + PostgreSQL |
@@ -187,6 +190,7 @@ homelab/
 │
 ├── apps/                        # Déploiements d'applications
 │   ├── argocd/                  # Livraison continue GitOps
+│   ├── stirling-pdf/            # Boîte à outils PDF
 │   ├── immich/
 │   ├── paperless-ngx/
 │   ├── wallabag/

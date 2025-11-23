@@ -21,6 +21,8 @@ Personal homelab infrastructure-as-code running self-hosted applications on a ba
 ```
 homelab/
 ├── apps/                        # Application Kustomize deployments
+│   ├── argocd/                 # GitOps continuous delivery
+│   ├── stirling-pdf/           # PDF manipulation toolkit
 │   ├── immich/                 # Photo/video management
 │   ├── paperless-ngx/          # Document management
 │   ├── wallabag/               # Read-it-later
@@ -70,14 +72,19 @@ Secret naming convention: `<app>-<component>-<type>`
 
 ### Tailscale Ingress
 
-Use standard Kubernetes Ingress (NOT custom Tailscale CRDs):
+Use standard Kubernetes Ingress with TLS for automatic HTTPS:
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: <app>-ingress
+  annotations:
+    tailscale.com/hostname: <short-hostname>
 spec:
   ingressClassName: tailscale
+  tls:
+    - hosts:
+        - <short-hostname>
   rules:
     - http:
         paths:
@@ -90,7 +97,9 @@ spec:
                   number: <port>
 ```
 
-Tailscale Operator generates URLs: `https://<service>.tail<tailnet-id>.ts.net`
+Tailscale Operator generates URLs: `https://<hostname>.tail<tailnet-id>.ts.net`
+
+**Important**: Use `tailscale.com/hostname` annotation to get short URLs instead of auto-generated long names.
 
 ### Shared Services Pattern
 
@@ -220,6 +229,21 @@ talosctl upgrade --nodes <node-ip> --image ghcr.io/siderolabs/installer:v1.11.1
 - **Authentication**: OIDC via Authelia + local admin account
 - **Dependencies**: Shared PostgreSQL
 
+### ArgoCD
+- **Authentication**: OIDC via Authelia + local admin account
+- **Insecure mode**: Runs without TLS internally (Tailscale handles TLS termination)
+- **Configuration**: Use `server.insecure: "true"` in `argocd-cm` ConfigMap (NOT deployment args)
+- **RBAC**: Groups mapped via `argocd-rbac-cm` ConfigMap (`argocd-admins` → `role:admin`)
+- **Private overlay**: Real URLs in `private/argocd/` for deployment
+- **Dependencies**: None (standalone)
+
+### Stirling-PDF
+- **Startup time**: First boot takes 2-3 minutes (font installation)
+- **Probes**: Use `startupProbe` with generous timeouts (30s initial, 30 failures allowed)
+- **Health endpoint**: `/api/v1/info/status`
+- **No authentication**: Open access (protected by Tailscale VPN)
+- **Dependencies**: None (standalone)
+
 ### Shared Services
 - **PostgreSQL init**: Uses `postgres-init.sh` script with ConfigMap to create multiple databases
 - **Redis**: Single instance with multiple DBs (0, 1, 2)
@@ -254,6 +278,19 @@ Check SecretStore status:
 kubectl get clustersecretstore bitwarden-cluster-secretstore
 kubectl describe externalsecret <name> -n <namespace>
 kubectl logs -n external-secrets-system deployment/external-secrets
+```
+
+### Tailscale Ingress Stuck or DNS Stale
+When Tailscale hostname conflicts or DNS returns wrong IP:
+1. Delete device from Tailscale admin console (https://login.tailscale.com/admin/machines)
+2. Remove finalizer if ingress is stuck: `kubectl patch ingress <name> -n <namespace> -p '{"metadata":{"finalizers":null}}' --type=merge`
+3. Delete ingress and recreate: `kubectl delete ingress <name> -n <namespace> && kubectl apply -k apps/<app>/base/`
+4. Check operator logs: `kubectl logs -n tailscale deployment/operator --tail=50`
+
+### Tailscale Operator Network Issues
+If operator cannot reach `api.tailscale.com`:
+```bash
+kubectl rollout restart deployment/operator -n tailscale
 ```
 
 ## Security & Sensitive Data

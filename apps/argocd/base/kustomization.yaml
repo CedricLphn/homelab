@@ -7,7 +7,6 @@ resources:
   - namespace.yaml
   - argocd-install.yaml
   - external-secrets.yaml
-  - tailscale-ingress.yaml
 
 patches:
   - path: argocd-cm-patch.yaml
@@ -18,9 +17,9 @@ patches:
     target:
       kind: ConfigMap
       name: argocd-rbac-cm
-  - path: argocd-server-patch.yaml
+  - path: argocd-server-service-patch.yaml
     target:
-      kind: Deployment
+      kind: Service
       name: argocd-server
 
 labels:
