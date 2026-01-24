@@ -25,7 +25,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: stirling-pdf
-          image: docker.stirlingpdf.com/stirlingtools/stirling-pdf:1.6.0
+          image: docker.stirlingpdf.com/stirlingtools/stirling-pdf:2.4.0
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
