@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: radicale-ingress
+  namespace: radicale
+  annotations:
+    tailscale.com/hostname: radicale
+spec:
+  ingressClassName: tailscale
+  tls:
+    - hosts:
+        - radicale
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: radicale
+                port:
+                  number: 5232
