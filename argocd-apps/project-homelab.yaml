@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: homelab
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: Homelab self-hosted applications
+
+  # Sources autorisées (repositories Git)
+  sourceRepos:
+    - 'https://github.com/CedricLphn/homelab.git'
+
+  # Destinations autorisées (clusters et namespaces)
+  destinations:
+    - namespace: '*'
+      server: https://kubernetes.default.svc
+
+  # Ressources Kubernetes autorisées
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+
+  # Roles pour l'accès au projet
+  roles:
+    - name: admin
+      description: Admin privileges for homelab project
+      policies:
+        - p, proj:homelab:admin, applications, *, homelab/*, allow
+      groups:
+        - argocd-admins
