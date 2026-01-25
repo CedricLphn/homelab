@@ -45,7 +45,10 @@ spec:
               name: miniflux-admin-secret
               key: password
         - name: BASE_URL
-          value: https://miniflux.<your-tailnet-id>.ts.net
+          valueFrom:
+            configMapKeyRef:
+              name: miniflux-urls
+              key: BASE_URL
         - name: OAUTH2_PROVIDER
           value: oidc
         - name: OAUTH2_CLIENT_ID
@@ -59,7 +62,10 @@ spec:
               name: miniflux-oidc-secret
               key: client-secret
         - name: OAUTH2_REDIRECT_URL
-          value: https://miniflux.<your-tailnet-id>.ts.net/oauth2/oidc/callback
+          valueFrom:
+            configMapKeyRef:
+              name: miniflux-urls
+              key: OAUTH2_REDIRECT_URL
         - name: OAUTH2_OIDC_DISCOVERY_ENDPOINT
           valueFrom:
             secretKeyRef:
