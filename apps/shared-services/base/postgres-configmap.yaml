@@ -10,6 +10,5 @@ data:
 
     psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
         SELECT 'CREATE DATABASE paperless' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'paperless')\gexec
-        SELECT 'CREATE DATABASE wallabag' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'wallabag')\gexec
         SELECT 'CREATE DATABASE miniflux' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'miniflux')\gexec
     EOSQL

@@ -3,23 +3,46 @@
   "extends": [
     "config:recommended"
   ],
-  "argocd": {
+  "kubernetes": {
     "managerFilePatterns": [
-      "/\\.yaml$/"
+      "/\\.yaml$/",
+      "/\\.yml$/"
     ]
   },
-  "customManagers": [
+  "packageRules": [
     {
-      "customType": "regex",
-      "description": "Update docker image references",
-      "managerFilePatterns": [
-        "/\\.yaml$/",
-        "/\\.yml$/"
+      "description": "Track Immich release tags",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": [
+        "ghcr.io/immich-app/immich-server",
+        "ghcr.io/immich-app/immich-machine-learning"
       ],
-      "matchStrings": [
-        "image: (?<depName>.*?):(?<currentValue>.*?)\\s+"
+      "followTag": "release"
+    },
+    {
+      "description": "Enable updates for latest tags (consider pinning to specific versions)",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": [
+        "wallabag/wallabag",
+        "ghcr.io/paperless-ngx/paperless-ngx",
+        "miniflux/miniflux",
+        "apache/tika"
       ],
-      "datasourceTemplate": "docker"
+      "followTag": "latest"
+    },
+    {
+      "description": "Track gotenberg major version 8",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["gotenberg/gotenberg"],
+      "allowedVersions": "/^8\\./",
+      "versioning": "semver"
+    },
+    {
+      "description": "Track rsshub chromium-bundled variant",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["diygod/rsshub"],
+      "allowedVersions": "/-chromium-bundled$/",
+      "versioning": "loose"
     }
   ]
 }
