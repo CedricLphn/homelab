@@ -11,21 +11,35 @@
   },
   "packageRules": [
     {
-      "description": "Track Immich release tags",
+      "description": "Pin Immich PostgreSQL to v14 with VectorChord (critical dependency)",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": [
+        "ghcr.io/immich-app/postgres"
+      ],
+      "enabled": false
+    },
+    {
+      "description": "Track Immich app versions (semver)",
       "matchDatasources": ["docker"],
       "matchPackageNames": [
         "ghcr.io/immich-app/immich-server",
         "ghcr.io/immich-app/immich-machine-learning"
       ],
-      "followTag": "release"
+      "versioning": "semver"
     },
     {
-      "description": "Enable updates for latest tags (consider pinning to specific versions)",
+      "description": "Track Miniflux and Paperless versions (semver)",
       "matchDatasources": ["docker"],
       "matchPackageNames": [
-        "wallabag/wallabag",
         "ghcr.io/paperless-ngx/paperless-ngx",
-        "miniflux/miniflux",
+        "miniflux/miniflux"
+      ],
+      "versioning": "semver"
+    },
+    {
+      "description": "Track Apache Tika latest tag",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": [
         "apache/tika"
       ],
       "followTag": "latest"
