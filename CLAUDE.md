@@ -25,7 +25,6 @@ homelab/
 │   ├── stirling-pdf/           # PDF manipulation toolkit
 │   ├── immich/                 # Photo/video management
 │   ├── paperless-ngx/          # Document management
-│   ├── wallabag/               # Read-it-later
 │   ├── miniflux/               # RSS reader
 │   └── shared-services/        # Shared PostgreSQL + Redis
 ├── infrastructure/
@@ -104,8 +103,8 @@ Tailscale Operator generates URLs: `https://<hostname>.tail<tailnet-id>.ts.net`
 ### Shared Services Pattern
 
 PostgreSQL 16 and Redis 7 run in `shared-services` namespace, providing databases for:
-- PostgreSQL: `paperless`, `wallabag`, `miniflux` databases
-- Redis: DB 0 (Immich), DB 1 (Paperless), DB 2 (Wallabag)
+- PostgreSQL: `paperless`, `miniflux` databases
+- Redis: DB 0 (Immich), DB 1 (Paperless)
 
 **Exception**: Immich uses dedicated PostgreSQL with VectorChord extension.
 
@@ -126,6 +125,20 @@ Every app follows this exact pattern:
 ```
 
 **No overlays** - homelab has single environment, no staging/prod distinction.
+
+### Kustomize Labels
+
+**Never use `commonLabels`** in kustomization.yaml - it injects labels into `selector.matchLabels` which are immutable, preventing updates to existing deployments. Use `labels` instead:
+```yaml
+labels:
+- pairs:
+    app.kubernetes.io/part-of: <app>
+  includeSelectors: false
+```
+
+### ArgoCD GitOps
+
+ArgoCD manages all applications with **autosync enabled**. Manual `kubectl` changes (patches, set image, etc.) will be reverted by ArgoCD. All changes must be committed and pushed to git. Use `argocd.argoproj.io/refresh: hard` annotation to force immediate sync after pushing.
 
 ## Code Style Conventions
 
@@ -211,20 +224,6 @@ talosctl upgrade --nodes <node-ip> --image ghcr.io/siderolabs/installer:v1.11.1
 - **OAuth secret**: `paperless-oauth-providers` contains full JSON config in Bitwarden
 - **Dependencies**: Shared PostgreSQL, Redis, Apache Tika, Gotenberg
 
-### Wallabag
-- **NO OIDC support**: Cannot use OAuth for user authentication (API only)
-- **Symfony framework**: Bitwarden secrets must avoid characters: `&`, `%`, `=`, `#` (at start)
-  - Error `You have requested a non-existent parameter "&"` indicates secret contains forbidden character
-  - Safe characters: alphanumeric, `-`, `_`, `~`, `@`, `!`, `*`, `/`, `+`
-- **Database initialization**: May require manual trigger:
-  ```bash
-  kubectl exec -n wallabag deployment/wallabag -- \
-    /var/www/wallabag/bin/console wallabag:install --env=prod --no-interaction
-  ```
-- **Default credentials**: `wallabag:wallabag` (change after first login)
-- **Dependencies**: Shared PostgreSQL, Redis
-- **Health endpoint**: `/`
-
 ### Miniflux
 - **Authentication**: OIDC via Authelia + local admin account
 - **Dependencies**: Shared PostgreSQL
@@ -238,6 +237,8 @@ talosctl upgrade --nodes <node-ip> --image ghcr.io/siderolabs/installer:v1.11.1
 - **Dependencies**: None (standalone)
 
 ### Stirling-PDF
+- **Deployment strategy**: Must use `Recreate` (not `RollingUpdate`) - H2 database locks cause deadlock with rolling updates
+- **Memory**: Requires 2Gi limit (OOM on Metaspace with 1Gi after v2.7.0)
 - **Startup time**: First boot takes 2-3 minutes (font installation)
 - **Probes**: Use `startupProbe` with generous timeouts (30s initial, 30 failures allowed)
 - **Health endpoint**: `/api/v1/info/status`
@@ -246,7 +247,7 @@ talosctl upgrade --nodes <node-ip> --image ghcr.io/siderolabs/installer:v1.11.1
 
 ### Shared Services
 - **PostgreSQL init**: Uses `postgres-init.sh` script with ConfigMap to create multiple databases
-- **Redis**: Single instance with multiple DBs (0, 1, 2)
+- **Redis**: Single instance with multiple DBs (0, 1)
 - **No Tailscale ingress**: Internal services only
 
 ## Known Issues & Solutions
@@ -265,12 +266,8 @@ External Secrets Operator cannot change PostgreSQL passwords post-initialization
 3. Update secret in Bitwarden
 4. Redeploy application
 
-### Symfony Parameter Parsing (Wallabag)
-When creating secrets in Bitwarden for Symfony apps, test with:
-```bash
-kubectl logs -f deployment/wallabag -n wallabag
-```
-If error contains `You have requested a non-existent parameter`, regenerate secret without `&`, `%`, `=`, `#`.
+### Immutable Selector Conflicts (Kustomize)
+If `kubectl apply -k` or ArgoCD sync fails with `spec.selector: Invalid value: ... field is immutable`, it means a label was added/removed from `selector.matchLabels`. Fix: delete the affected deployment(s) and let ArgoCD recreate them. PVCs and data are preserved.
 
 ### External Secrets Not Syncing
 Check SecretStore status:

@@ -30,7 +30,6 @@ This repository contains the complete infrastructure-as-code for my personal hom
 | [Radicale](https://radicale.org/) | CalDAV/CardDAV server (calendar & contacts sync) | Authelia (forward auth) | 5Gi |
 | [Immich](https://immich.app/) | Photo and video management (Google Photos alternative) | Local + Tailscale | 500Gi library + PostgreSQL |
 | [Paperless-ngx](https://docs.paperless-ngx.com/) | Document management system | OAuth (Authelia) | 50Gi media + PostgreSQL |
-| [Wallabag](https://wallabag.org/) | Read-it-later service (Pocket alternative) | Local | 20Gi images + PostgreSQL |
 | [Miniflux](https://miniflux.app/) | Minimalist RSS reader | OIDC (Authelia) + Local admin | PostgreSQL |
 | **Shared Services** | PostgreSQL 16 + Redis 7 | - | 20Gi + 2Gi |
 
@@ -43,7 +42,7 @@ homelab/
 │
 ├── docs/                        # Documentation
 │   ├── architecture.md          # Infrastructure architecture
-│   └── setup-guide.md           # Step-by-step setup guide
+│   └── ...
 │
 ├── infrastructure/              # Base infrastructure
 │   ├── talos/                   # Talos Linux configurations
@@ -60,7 +59,6 @@ homelab/
 │   ├── radicale/                # CalDAV/CardDAV server
 │   ├── immich/
 │   ├── paperless-ngx/
-│   ├── wallabag/
 │   ├── miniflux/
 │   └── shared-services/
 │
@@ -167,7 +165,6 @@ Ce dépôt contient l'infrastructure complète de mon homelab personnel, fonctio
 | [Radicale](https://radicale.org/) | Serveur CalDAV/CardDAV (sync calendriers & contacts) | Authelia (forward auth) | 5Gi |
 | [Immich](https://immich.app/) | Gestion de photos et vidéos (alternative à Google Photos) | Local + Tailscale | 500Gi bibliothèque + PostgreSQL |
 | [Paperless-ngx](https://docs.paperless-ngx.com/) | Système de gestion documentaire | OAuth (Authelia) | 50Gi média + PostgreSQL |
-| [Wallabag](https://wallabag.org/) | Service "lire plus tard" (alternative à Pocket) | Local | 20Gi images + PostgreSQL |
 | [Miniflux](https://miniflux.app/) | Lecteur RSS minimaliste | OIDC (Authelia) + Admin local | PostgreSQL |
 | **Services partagés** | PostgreSQL 16 + Redis 7 | - | 20Gi + 2Gi |
 
@@ -180,7 +177,7 @@ homelab/
 │
 ├── docs/                        # Documentation
 │   ├── architecture.md          # Architecture de l'infrastructure
-│   └── setup-guide.md           # Guide d'installation étape par étape
+│   └── ...
 │
 ├── infrastructure/              # Infrastructure de base
 │   ├── talos/                   # Configurations Talos Linux
@@ -197,7 +194,6 @@ homelab/
 │   ├── radicale/                # Serveur CalDAV/CardDAV
 │   ├── immich/
 │   ├── paperless-ngx/
-│   ├── wallabag/
 │   ├── miniflux/
 │   └── shared-services/
 │
