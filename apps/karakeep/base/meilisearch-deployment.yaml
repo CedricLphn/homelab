@@ -27,6 +27,8 @@ spec:
                   key: meili-master-key
             - name: MEILI_NO_ANALYTICS
               value: "true"
+            - name: MEILI_DB_PATH
+              value: /meili_data/data.ms
           volumeMounts:
             - name: data
               mountPath: /meili_data
