@@ -3,6 +3,8 @@
   "extends": [
     "config:recommended"
   ],
+  "assignees": ["CedricLphn"],
+  "schedule": ["on saturday and sunday"],
   "kubernetes": {
     "managerFilePatterns": [
       "/\\.yaml$/",
@@ -10,6 +12,17 @@
     ]
   },
   "packageRules": [
+    {
+      "description": "Automerge patch and minor updates",
+      "matchUpdateTypes": ["patch", "minor"],
+      "automerge": true
+    },
+    {
+      "description": "Label major updates for manual review",
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "labels": ["major"]
+    },
     {
       "description": "Pin Immich PostgreSQL to v14 with VectorChord (critical dependency)",
       "matchDatasources": ["docker"],
@@ -19,37 +32,67 @@
       "enabled": false
     },
     {
-      "description": "Track Immich app versions (semver)",
+      "description": "Group Immich stack updates",
       "matchDatasources": ["docker"],
       "matchPackageNames": [
         "ghcr.io/immich-app/immich-server",
         "ghcr.io/immich-app/immich-machine-learning"
       ],
+      "groupName": "immich",
       "versioning": "semver"
     },
     {
-      "description": "Track Miniflux and Paperless versions (semver)",
+      "description": "Group Karakeep stack updates",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": [
+        "ghcr.io/karakeep-app/karakeep",
+        "getmeili/meilisearch",
+        "gcr.io/zenika-hub/alpine-chrome"
+      ],
+      "groupName": "karakeep"
+    },
+    {
+      "description": "Group Paperless stack updates",
       "matchDatasources": ["docker"],
       "matchPackageNames": [
         "ghcr.io/paperless-ngx/paperless-ngx",
+        "apache/tika",
+        "gotenberg/gotenberg"
+      ],
+      "groupName": "paperless",
+      "versioning": "semver"
+    },
+    {
+      "description": "Group shared services updates",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": [
+        "postgres",
+        "redis"
+      ],
+      "groupName": "shared-services"
+    },
+    {
+      "description": "Group ArgoCD stack updates",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": [
+        "quay.io/argoproj/argocd",
+        "ghcr.io/dexidp/dex"
+      ],
+      "groupName": "argocd"
+    },
+    {
+      "description": "Track Miniflux (semver)",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": [
         "miniflux/miniflux"
       ],
       "versioning": "semver"
     },
     {
-      "description": "Track Apache Tika latest tag",
-      "matchDatasources": ["docker"],
-      "matchPackageNames": [
-        "apache/tika"
-      ],
-      "followTag": "latest"
-    },
-    {
-      "description": "Track gotenberg major version 8",
+      "description": "Track gotenberg major version 8 only",
       "matchDatasources": ["docker"],
       "matchPackageNames": ["gotenberg/gotenberg"],
-      "allowedVersions": "/^8\\./",
-      "versioning": "semver"
+      "allowedVersions": "/^8\\./"
     },
     {
       "description": "Track rsshub chromium-bundled variant",
