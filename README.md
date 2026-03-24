@@ -31,6 +31,7 @@ This repository contains the complete infrastructure-as-code for my personal hom
 | [Immich](https://immich.app/) | Photo and video management (Google Photos alternative) | Local + Tailscale | 500Gi library + PostgreSQL |
 | [Paperless-ngx](https://docs.paperless-ngx.com/) | Document management system | OAuth (Authelia) | 50Gi media + PostgreSQL |
 | [Miniflux](https://miniflux.app/) | Minimalist RSS reader | OIDC (Authelia) + Local admin | PostgreSQL |
+| [Karakeep](https://karakeep.app/) | Bookmark manager (ex-Hoarder) | OIDC (Authelia) | 10Gi data + 5Gi Meilisearch |
 | **Shared Services** | PostgreSQL 16 + Redis 7 | - | 20Gi + 2Gi |
 
 ### 📁 Repository Structure
@@ -60,6 +61,7 @@ homelab/
 │   ├── immich/
 │   ├── paperless-ngx/
 │   ├── miniflux/
+│   ├── karakeep/                # Bookmark manager
 │   └── shared-services/
 │
 └── private/                     # ⚠️ GITIGNORED - Sensitive configs
@@ -166,6 +168,7 @@ Ce dépôt contient l'infrastructure complète de mon homelab personnel, fonctio
 | [Immich](https://immich.app/) | Gestion de photos et vidéos (alternative à Google Photos) | Local + Tailscale | 500Gi bibliothèque + PostgreSQL |
 | [Paperless-ngx](https://docs.paperless-ngx.com/) | Système de gestion documentaire | OAuth (Authelia) | 50Gi média + PostgreSQL |
 | [Miniflux](https://miniflux.app/) | Lecteur RSS minimaliste | OIDC (Authelia) + Admin local | PostgreSQL |
+| [Karakeep](https://karakeep.app/) | Gestionnaire de bookmarks (ex-Hoarder) | OIDC (Authelia) | 10Gi data + 5Gi Meilisearch |
 | **Services partagés** | PostgreSQL 16 + Redis 7 | - | 20Gi + 2Gi |
 
 ### 📁 Structure du dépôt
@@ -195,6 +198,7 @@ homelab/
 │   ├── immich/
 │   ├── paperless-ngx/
 │   ├── miniflux/
+│   ├── karakeep/                # Gestionnaire de bookmarks
 │   └── shared-services/
 │
 └── private/                     # ⚠️ GITIGNORE - Configurations sensibles

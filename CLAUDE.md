@@ -26,6 +26,7 @@ homelab/
 │   ├── immich/                 # Photo/video management
 │   ├── paperless-ngx/          # Document management
 │   ├── miniflux/               # RSS reader
+│   ├── karakeep/               # Bookmark manager (ex-Hoarder)
 │   └── shared-services/        # Shared PostgreSQL + Redis
 ├── infrastructure/
 │   ├── talos/                  # Talos config templates (.example files)
@@ -235,6 +236,14 @@ talosctl upgrade --nodes <node-ip> --image ghcr.io/siderolabs/installer:v1.11.1
 - **RBAC**: Groups mapped via `argocd-rbac-cm` ConfigMap (`argocd-admins` → `role:admin`)
 - **Private overlay**: Real URLs in `private/argocd/` for deployment
 - **Dependencies**: None (standalone)
+
+### Karakeep
+- **Image**: `ghcr.io/karakeep-app/karakeep:0.31.0` (formerly Hoarder)
+- **Database**: SQLite internal (WAL mode) — no external PostgreSQL/Redis
+- **Dependencies**: Meilisearch (full-text search), Chrome headless (web scraping/screenshots)
+- **Authentication**: OIDC via Authelia + local accounts
+- **Health endpoint**: `/` (port 3000)
+- **URL config**: `NEXTAUTH_URL` in private ConfigMap (`private/configmaps/karakeep-urls-configmap.yaml`)
 
 ### Stirling-PDF
 - **Deployment strategy**: Must use `Recreate` (not `RollingUpdate`) - H2 database locks cause deadlock with rolling updates

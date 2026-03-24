@@ -113,8 +113,8 @@ This homelab is built on a **bare-metal Kubernetes cluster** running **Talos Lin
 **Volumes:**
 - Immich: 500Gi (library) + 10Gi (cache) + 20Gi (postgres)
 - Paperless: 10Gi (data) + 50Gi (media) + 10Gi (consume) + 10Gi (export) + postgres
-- Wallabag: 10Gi (data) + 20Gi (images) + postgres
 - Miniflux: 10Gi (postgres)
+- Karakeep: 10Gi (data) + 5Gi (meilisearch)
 - Shared PostgreSQL: 20Gi
 - Shared Redis: 2Gi
 
@@ -168,9 +168,9 @@ Application Pods
 **Supported Apps:**
 - Paperless-ngx: OAuth2
 - Miniflux: OIDC
+- Karakeep: OIDC
 
 **Not Supported:**
-- Wallabag: No OIDC support for user authentication
 - Immich: Local authentication only
 
 **Benefits:**
@@ -192,8 +192,7 @@ Application Pods
 │  │                  │      │                  │        │
 │  │  Databases:      │      │  DBs:            │        │
 │  │  - paperless     │      │  0: immich       │        │
-│  │  - wallabag      │      │  1: paperless    │        │
-│  │  - miniflux      │      │  2: wallabag     │        │
+│  │  - miniflux      │      │  1: paperless    │        │
 │  └──────────────────┘      └──────────────────┘        │
 │           ↑                         ↑                   │
 │           │                         │                   │
@@ -203,15 +202,14 @@ Application Pods
 ┌───────────┼─────────────────────────┼───────────────────┐
 │           │                         │                   │
 │  ┌────────┴────────┐   ┌───────────┴──────────┐        │
-│  │  Paperless-ngx  │   │  Wallabag            │        │
-│  │  Namespace      │   │  Namespace           │        │
-│  └─────────────────┘   └──────────────────────┘        │
-│                                                         │
-│  ┌─────────────────┐   ┌──────────────────────┐        │
-│  │  Miniflux       │   │  Immich              │        │
+│  │  Paperless-ngx  │   │  Immich              │        │
 │  │  Namespace      │   │  Namespace           │        │
 │  └─────────────────┘   └──────────────────────┘        │
 │                           (has own PostgreSQL)         │
+│  ┌─────────────────┐                                   │
+│  │  Miniflux       │                                   │
+│  │  Namespace      │                                   │
+│  └─────────────────┘                                   │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -478,8 +476,8 @@ Ce homelab est construit sur un **cluster Kubernetes bare-metal** exécutant **T
 **Volumes :**
 - Immich : 500Gi (bibliothèque) + 10Gi (cache) + 20Gi (postgres)
 - Paperless : 10Gi (data) + 50Gi (media) + 10Gi (consume) + 10Gi (export) + postgres
-- Wallabag : 10Gi (data) + 20Gi (images) + postgres
 - Miniflux : 10Gi (postgres)
+- Karakeep : 10Gi (data) + 5Gi (meilisearch)
 - PostgreSQL partagé : 20Gi
 - Redis partagé : 2Gi
 
@@ -533,9 +531,9 @@ Pods d'application
 **Applications supportées :**
 - Paperless-ngx : OAuth2
 - Miniflux : OIDC
+- Karakeep : OIDC
 
 **Non supporté :**
-- Wallabag : Pas de support OIDC pour l'authentification utilisateur
 - Immich : Authentification locale uniquement
 
 **Avantages :**
@@ -557,8 +555,7 @@ Pods d'application
 │  │                  │      │                  │        │
 │  │  Bases:          │      │  BDs:            │        │
 │  │  - paperless     │      │  0: immich       │        │
-│  │  - wallabag      │      │  1: paperless    │        │
-│  │  - miniflux      │      │  2: wallabag     │        │
+│  │  - miniflux      │      │  1: paperless    │        │
 │  └──────────────────┘      └──────────────────┘        │
 │           ↑                         ↑                   │
 │           │                         │                   │
@@ -568,15 +565,14 @@ Pods d'application
 ┌───────────┼─────────────────────────┼───────────────────┐
 │           │                         │                   │
 │  ┌────────┴────────┐   ┌───────────┴──────────┐        │
-│  │  Paperless-ngx  │   │  Wallabag            │        │
-│  │  Namespace      │   │  Namespace           │        │
-│  └─────────────────┘   └──────────────────────┘        │
-│                                                         │
-│  ┌─────────────────┐   ┌──────────────────────┐        │
-│  │  Miniflux       │   │  Immich              │        │
+│  │  Paperless-ngx  │   │  Immich              │        │
 │  │  Namespace      │   │  Namespace           │        │
 │  └─────────────────┘   └──────────────────────┘        │
 │                           (a son propre PostgreSQL)    │
+│  ┌─────────────────┐                                   │
+│  │  Miniflux       │                                   │
+│  │  Namespace      │                                   │
+│  └─────────────────┘                                   │
 └─────────────────────────────────────────────────────────┘
 ```
 

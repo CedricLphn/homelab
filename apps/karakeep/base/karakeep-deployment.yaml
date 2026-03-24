@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: karakeep
+  namespace: karakeep
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: karakeep
+  template:
+    metadata:
+      labels:
+        app: karakeep
+    spec:
+      containers:
+        - name: karakeep
+          image: ghcr.io/karakeep-app/karakeep:0.31.0
+          ports:
+            - containerPort: 3000
+              name: http
+          env:
+            - name: DATA_DIR
+              value: /data
+            - name: NEXTAUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: karakeep-secret
+                  key: nextauth-secret
+            - name: NEXTAUTH_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: karakeep-urls
+                  key: NEXTAUTH_URL
+            - name: MEILI_ADDR
+              value: http://meilisearch:7700
+            - name: MEILI_MASTER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: karakeep-secret
+                  key: meili-master-key
+            - name: BROWSER_WEB_URL
+              value: http://chrome:9222
+            - name: DISABLE_SIGNUPS
+              value: "true"
+            - name: OAUTH_PROVIDER_NAME
+              value: Authelia
+            - name: OAUTH_WELLKNOWN_URL
+              valueFrom:
+                secretKeyRef:
+                  name: karakeep-oidc-secret
+                  key: wellknown-url
+            - name: OAUTH_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: karakeep-oidc-secret
+                  key: client-id
+            - name: OAUTH_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: karakeep-oidc-secret
+                  key: client-secret
+            - name: OAUTH_SCOPE
+              value: openid profile email
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: karakeep-data
