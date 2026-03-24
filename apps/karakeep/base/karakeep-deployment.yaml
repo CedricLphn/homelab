@@ -42,7 +42,7 @@ spec:
             - name: BROWSER_WEB_URL
               value: http://chrome:9222
             - name: DISABLE_SIGNUPS
-              value: "false"
+              value: "true"
             - name: OAUTH_PROVIDER_NAME
               value: Authelia
             - name: OAUTH_WELLKNOWN_URL
