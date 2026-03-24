@@ -6,7 +6,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: local-path
+  storageClassName: csi-cinder-sc-retain
   resources:
     requests:
       storage: 10Gi
@@ -19,7 +19,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: local-path
+  storageClassName: csi-cinder-sc-retain
   resources:
     requests:
       storage: 5Gi
