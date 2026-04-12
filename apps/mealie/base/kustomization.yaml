@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: mealie
+resources:
+  - namespace.yaml
+  - pvc.yaml
+  - external-secrets.yaml
+  - mealie-deployment.yaml
+  - mealie-service.yaml
+  - tailscale-ingress.yaml
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: mealie
+    includeSelectors: false
