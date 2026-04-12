@@ -41,6 +41,7 @@ In the private Authelia config (outside this repo), add the new OIDC client:
   authorization_policy: two_factor
   redirect_uris:
     - https://mealie.tail<id>.ts.net/login
+    - https://mealie.tail<id>.ts.net/login?direct=1
   scopes:
     - openid
     - profile
