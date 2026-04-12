@@ -49,15 +49,16 @@ apps/mealie/
 ```
 
 Plus:
-- `apps/argocd/applications/mealie.yaml` — ArgoCD Application for GitOps sync
+- `argocd-apps/mealie.yaml` — ArgoCD Application for GitOps sync (matches existing pattern used by all other apps)
 - `private/configmaps/mealie-urls-configmap.yaml` — `BASE_URL` with real Tailscale URL (gitignored)
+- `renovate.json` — add `mealie-recipes/mealie` tracking entry
 
 ## Deployment details
 
 ### Image and resources
 
 ```yaml
-image: ghcr.io/mealie-recipes/mealie:v2.8.0
+image: ghcr.io/mealie-recipes/mealie:v3.14.0
 resources:
   requests: { cpu: 100m, memory: 256Mi }
   limits:   { cpu: 1000m, memory: 768Mi }
@@ -78,14 +79,15 @@ Renovate will track the image tag through the existing configuration.
 | `BASE_URL` | private ConfigMap | `https://mealie.tail<id>.ts.net` |
 | `ALLOW_SIGNUP` | ConfigMap | `false` |
 | `TZ` | ConfigMap | `Europe/Paris` |
-| `OIDC_AUTH_ENABLED` | ConfigMap | `true` |
-| `OIDC_CONFIGURATION_URL` | ConfigMap | `https://auth.tail<id>.ts.net/.well-known/openid-configuration` |
-| `OIDC_CLIENT_ID` | ConfigMap | `mealie` |
+| `OIDC_AUTH_ENABLED` | Deployment env | `true` |
+| `OIDC_CONFIGURATION_URL` | Secret (ESO) | from Bitwarden `mealie-oidc-wellknown-url` (contains private Tailscale URL) |
+| `OIDC_CLIENT_ID` | Secret (ESO) | from Bitwarden `mealie-oidc-client-id` |
 | `OIDC_CLIENT_SECRET` | Secret (ESO) | from Bitwarden `mealie-oidc-client-secret` |
-| `OIDC_AUTO_REDIRECT_LOGIN` | ConfigMap | `false` (keep local login as fallback) |
-| `OIDC_PROVIDER_NAME` | ConfigMap | `Authelia` |
-| `OIDC_USER_GROUP` | ConfigMap | `mealie-users` |
-| `OIDC_ADMIN_GROUP` | ConfigMap | `admins` (global admin group, reused) |
+| `OIDC_AUTO_REDIRECT` | Deployment env | `false` (keep local login as fallback) |
+| `OIDC_PROVIDER_NAME` | Deployment env | `Authelia` |
+| `OIDC_USER_GROUP` | Deployment env | `mealie-users` |
+| `OIDC_ADMIN_GROUP` | Deployment env | `admins` (global admin group, reused) |
+| `OIDC_SIGNUP_ENABLED` | Deployment env | `true` (auto-create users at first OIDC login) |
 
 ### Storage
 
@@ -139,28 +141,57 @@ This is simpler than Paperless's flow: Mealie's `OIDC_ADMIN_GROUP` handles admin
 
 ## Secrets
 
-`ExternalSecret` `mealie-secrets` in namespace `mealie`:
+Two `ExternalSecret` resources in namespace `mealie`, following the Karakeep pattern (separate `<app>-secret` for app secrets and `<app>-oidc-secret` for OIDC):
 
 ```yaml
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: mealie-secret
+  namespace: mealie
 spec:
   refreshInterval: 1h
   secretStoreRef:
     name: bitwarden-cluster-secretstore
     kind: ClusterSecretStore
   target:
-    name: mealie-secrets
+    name: mealie-secret
+    creationPolicy: Owner
   data:
-    - secretKey: POSTGRES_PASSWORD
+    - secretKey: db-password
       remoteRef: { key: mealie-db-password }
-    - secretKey: OIDC_CLIENT_SECRET
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: mealie-oidc-secret
+  namespace: mealie
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: bitwarden-cluster-secretstore
+    kind: ClusterSecretStore
+  target:
+    name: mealie-oidc-secret
+    creationPolicy: Owner
+  data:
+    - secretKey: client-id
+      remoteRef: { key: mealie-oidc-client-id }
+    - secretKey: client-secret
       remoteRef: { key: mealie-oidc-client-secret }
+    - secretKey: wellknown-url
+      remoteRef: { key: mealie-oidc-wellknown-url }
 ```
 
-Both secrets must exist in Bitwarden before deployment.
+Four secrets must exist in Bitwarden before deployment:
+- `mealie-db-password`
+- `mealie-oidc-client-id`
+- `mealie-oidc-client-secret`
+- `mealie-oidc-wellknown-url`
 
 ## ArgoCD Application
 
-New file `apps/argocd/applications/mealie.yaml`:
+New file `argocd-apps/mealie.yaml` (matches pattern of all existing apps, picked up automatically by the `apps` app-of-apps):
 
 ```yaml
 apiVersion: argoproj.io/v1alpha1
@@ -168,18 +199,23 @@ kind: Application
 metadata:
   name: mealie
   namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
 spec:
-  project: default
+  project: homelab
   source:
-    repoURL: https://github.com/CedricLphn/homelab
+    repoURL: https://github.com/CedricLphn/homelab.git
     targetRevision: main
     path: apps/mealie/base
   destination:
     server: https://kubernetes.default.svc
     namespace: mealie
   syncPolicy:
-    automated: { prune: true, selfHeal: true }
-    syncOptions: [CreateNamespace=false]
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
 ```
 
 ## Deployment sequence (one-time setup)
