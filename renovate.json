@@ -89,6 +89,14 @@
       "versioning": "semver"
     },
     {
+      "description": "Track Mealie (semver)",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": [
+        "ghcr.io/mealie-recipes/mealie"
+      ],
+      "versioning": "semver"
+    },
+    {
       "description": "Track gotenberg major version 8 only",
       "matchDatasources": ["docker"],
       "matchPackageNames": ["gotenberg/gotenberg"],
