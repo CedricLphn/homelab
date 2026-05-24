@@ -8,8 +8,8 @@ Personal homelab infrastructure-as-code running self-hosted applications on a ba
 
 ## Infrastructure Stack
 
-- **OS**: Talos Linux v1.11.1 (immutable, API-driven, no SSH)
-- **Kubernetes**: v1.34.0
+- **OS**: Talos Linux v1.13.2 (immutable, API-driven, no SSH)
+- **Kubernetes**: v1.36.0
 - **Deployment**: Kustomize (no Helm, no overlays)
 - **Storage**: local-path-provisioner (StorageClass: `local-path`)
 - **Secrets**: Bitwarden Secrets Manager via External Secrets Operator
@@ -194,7 +194,7 @@ talosctl health --nodes <control-plane-ip>
 talosctl logs --nodes <node-ip> kubelet
 
 # Upgrade Talos
-talosctl upgrade --nodes <node-ip> --image ghcr.io/siderolabs/installer:v1.11.1
+talosctl upgrade --nodes <node-ip> --image ghcr.io/siderolabs/installer:v1.13.2
 ```
 
 ## Application-Specific Constraints

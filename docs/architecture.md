@@ -20,7 +20,7 @@ This homelab is built on a **bare-metal Kubernetes cluster** running **Talos Lin
                      │
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
-│              Kubernetes Cluster (v1.34.0)                   │
+│              Kubernetes Cluster (v1.36.0)                   │
 │                                                             │
 │  ┌──────────────────────────────────────────────────────┐  │
 │  │         Control Plane Node(s)                        │  │
@@ -42,7 +42,7 @@ This homelab is built on a **bare-metal Kubernetes cluster** running **Talos Lin
                      │
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                 Talos Linux (v1.11.1)                       │
+│                 Talos Linux (v1.13.2)                       │
 │  - Immutable OS                                             │
 │  - API-driven configuration                                 │
 │  - No SSH access                                            │
@@ -73,11 +73,11 @@ This homelab is built on a **bare-metal Kubernetes cluster** running **Talos Lin
 - Control plane scheduling: Apps can run on control plane nodes
 - Disk quotas: Project quota support for storage
 
-**Version**: v1.11.1
+**Version**: v1.13.2
 
 #### 2. Kubernetes Cluster
 
-**Version**: v1.34.0
+**Version**: v1.36.0
 
 **Networking:**
 - **Pod Subnet**: `10.244.0.0/16`
@@ -383,7 +383,7 @@ Ce homelab est construit sur un **cluster Kubernetes bare-metal** exécutant **T
                      │
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
-│              Cluster Kubernetes (v1.34.0)                   │
+│              Cluster Kubernetes (v1.36.0)                   │
 │                                                             │
 │  ┌──────────────────────────────────────────────────────┐  │
 │  │         Nœud(s) Control Plane                        │  │
@@ -405,7 +405,7 @@ Ce homelab est construit sur un **cluster Kubernetes bare-metal** exécutant **T
                      │
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                 Talos Linux (v1.11.1)                       │
+│                 Talos Linux (v1.13.2)                       │
 │  - OS immuable                                              │
 │  - Configuration pilotée par API                            │
 │  - Pas d'accès SSH                                          │
@@ -436,11 +436,11 @@ Ce homelab est construit sur un **cluster Kubernetes bare-metal** exécutant **T
 - Ordonnancement control plane : Les apps peuvent tourner sur les nœuds control plane
 - Quotas disque : Support des quotas projet pour le stockage
 
-**Version** : v1.11.1
+**Version** : v1.13.2
 
 #### 2. Cluster Kubernetes
 
-**Version** : v1.34.0
+**Version** : v1.36.0
 
 **Réseau :**
 - **Sous-réseau pods** : `10.244.0.0/16`

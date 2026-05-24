@@ -4,8 +4,8 @@ This directory contains example Talos Linux configurations for the homelab clust
 
 ## Overview
 
-- **Talos Version**: v1.11.1
-- **Kubernetes Version**: v1.34.0
+- **Talos Version**: v1.13.2
+- **Kubernetes Version**: v1.36.0
 - **CNI**: Default (Flannel alternative configuration available)
 - **Control Plane Endpoint**: Configure your own endpoint
 

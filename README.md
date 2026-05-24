@@ -13,8 +13,8 @@
 This repository contains the complete infrastructure-as-code for my personal homelab, running on a bare-metal Kubernetes cluster powered by Talos Linux.
 
 **Key Technologies:**
-- **OS**: [Talos Linux](https://www.talos.dev/) v1.11.1 (immutable, secure, minimal)
-- **Kubernetes**: v1.34.0
+- **OS**: [Talos Linux](https://www.talos.dev/) v1.13.2 (immutable, secure, minimal)
+- **Kubernetes**: v1.36.0
 - **Deployment**: Kustomize (GitOps-ready)
 - **Storage**: local-path-provisioner
 - **Secrets**: Bitwarden Secrets Manager via External Secrets Operator
@@ -150,8 +150,8 @@ MIT License - Feel free to use this as inspiration for your own homelab!
 Ce dépôt contient l'infrastructure complète de mon homelab personnel, fonctionnant sur un cluster Kubernetes bare-metal propulsé par Talos Linux.
 
 **Technologies clés :**
-- **OS** : [Talos Linux](https://www.talos.dev/) v1.11.1 (immuable, sécurisé, minimal)
-- **Kubernetes** : v1.34.0
+- **OS** : [Talos Linux](https://www.talos.dev/) v1.13.2 (immuable, sécurisé, minimal)
+- **Kubernetes** : v1.36.0
 - **Déploiement** : Kustomize (prêt pour GitOps)
 - **Stockage** : local-path-provisioner
 - **Secrets** : Bitwarden Secrets Manager via External Secrets Operator

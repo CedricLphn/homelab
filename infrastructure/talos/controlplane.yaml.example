@@ -16,7 +16,7 @@ machine:
     #   - your-domain.com
 
     kubelet:
-        image: ghcr.io/siderolabs/kubelet:v1.34.0
+        image: ghcr.io/siderolabs/kubelet:v1.36.0
         defaultRuntimeSeccompProfileEnabled: true
         disableManifestsDirectory: true
 
@@ -38,7 +38,7 @@ machine:
 
     install:
         disk: /dev/sda  # Adjust to your disk device
-        image: ghcr.io/siderolabs/installer:v1.11.1
+        image: ghcr.io/siderolabs/installer:v1.13.2
         wipe: false
 
     features:
@@ -87,7 +87,7 @@ cluster:
         key: <REDACTED> # Service account key (auto-generated)
 
     apiServer:
-        image: registry.k8s.io/kube-apiserver:v1.34.0
+        image: registry.k8s.io/kube-apiserver:v1.36.0
         certSANs: []
         # Add SANs for your API server:
         #   - <YOUR-CONTROL-PLANE-IP>
@@ -111,13 +111,13 @@ cluster:
                         - kube-system
 
     controllerManager:
-        image: registry.k8s.io/kube-controller-manager:v1.34.0
+        image: registry.k8s.io/kube-controller-manager:v1.36.0
 
     proxy:
-        image: registry.k8s.io/kube-proxy:v1.34.0
+        image: registry.k8s.io/kube-proxy:v1.36.0
 
     scheduler:
-        image: registry.k8s.io/kube-scheduler:v1.34.0
+        image: registry.k8s.io/kube-scheduler:v1.36.0
 
     discovery:
         enabled: true
@@ -133,6 +133,6 @@ cluster:
             key: <REDACTED> # Etcd CA private key (auto-generated)
 
     coreDNS:
-        image: registry.k8s.io/coredns/coredns:v1.12.0
+        image: registry.k8s.io/coredns/coredns:v1.14.3
 
     allowSchedulingOnControlPlanes: true

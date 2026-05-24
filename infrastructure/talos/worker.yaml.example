@@ -12,7 +12,7 @@ machine:
     certSANs: []
 
     kubelet:
-        image: ghcr.io/siderolabs/kubelet:v1.34.0
+        image: ghcr.io/siderolabs/kubelet:v1.36.0
         defaultRuntimeSeccompProfileEnabled: true
         disableManifestsDirectory: true
 
@@ -34,7 +34,7 @@ machine:
 
     install:
         disk: /dev/sda  # Adjust to your disk device
-        image: ghcr.io/siderolabs/installer:v1.11.1
+        image: ghcr.io/siderolabs/installer:v1.13.2
         wipe: false
 
     features:
