@@ -1,10 +1,15 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended"
+    "config:recommended",
+    ":separateMajorReleases",
+    ":prHourlyLimitNone",
+    ":prConcurrentLimitNone"
   ],
   "assignees": ["CedricLphn"],
-  "schedule": ["on saturday and sunday"],
+  "labels": ["dependencies"],
+  "timezone": "Europe/Paris",
+  "schedule": ["before 9am on monday"],
   "kubernetes": {
     "managerFilePatterns": [
       "/\\.yaml$/",
@@ -21,7 +26,108 @@
       "description": "Label major updates for manual review",
       "matchUpdateTypes": ["major"],
       "automerge": false,
-      "labels": ["major"]
+      "labels": ["dependencies", "major"]
+    },
+    {
+      "description": "Group Cilium",
+      "groupName": "Cilium",
+      "groupSlug": "cilium",
+      "matchDatasources": ["docker", "helm"],
+      "matchPackageNames": [
+        "/^quay\\.io\\/cilium\\//",
+        "/^cilium\\//"
+      ]
+    },
+    {
+      "description": "Group Traefik",
+      "groupName": "Traefik",
+      "groupSlug": "traefik",
+      "matchDatasources": ["docker", "helm"],
+      "matchPackageNames": [
+        "/^docker\\.io\\/traefik$/",
+        "/^traefik\\//"
+      ]
+    },
+    {
+      "description": "Group cert-manager",
+      "groupName": "cert-manager",
+      "groupSlug": "cert-manager",
+      "matchDatasources": ["docker", "helm"],
+      "matchPackageNames": [
+        "/^quay\\.io\\/jetstack\\/cert-manager/",
+        "/^jetstack\\/cert-manager/"
+      ]
+    },
+    {
+      "description": "Group Gateway API CRDs",
+      "groupName": "Gateway API",
+      "groupSlug": "gateway-api",
+      "matchPackageNames": [
+        "kubernetes-sigs/gateway-api"
+      ]
+    },
+    {
+      "description": "Group External Secrets",
+      "groupName": "External Secrets",
+      "groupSlug": "external-secrets",
+      "matchDatasources": ["docker", "helm"],
+      "matchPackageNames": [
+        "/external-secrets/"
+      ]
+    },
+    {
+      "description": "Group ArgoCD stack",
+      "groupName": "ArgoCD",
+      "groupSlug": "argocd",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": [
+        "quay.io/argoproj/argocd",
+        "ghcr.io/dexidp/dex"
+      ]
+    },
+    {
+      "description": "Group Immich stack",
+      "groupName": "Immich",
+      "groupSlug": "immich",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": [
+        "ghcr.io/immich-app/immich-server",
+        "ghcr.io/immich-app/immich-machine-learning"
+      ],
+      "versioning": "semver"
+    },
+    {
+      "description": "Group Karakeep stack",
+      "groupName": "Karakeep",
+      "groupSlug": "karakeep",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": [
+        "ghcr.io/karakeep-app/karakeep",
+        "getmeili/meilisearch",
+        "gcr.io/zenika-hub/alpine-chrome"
+      ]
+    },
+    {
+      "description": "Group Paperless stack",
+      "groupName": "Paperless",
+      "groupSlug": "paperless",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": [
+        "ghcr.io/paperless-ngx/paperless-ngx",
+        "apache/tika",
+        "gotenberg/gotenberg"
+      ],
+      "versioning": "semver"
+    },
+    {
+      "description": "Group shared services",
+      "groupName": "Shared services",
+      "groupSlug": "shared-services",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": [
+        "postgres",
+        "redis"
+      ]
     },
     {
       "description": "Pin Immich PostgreSQL to v14 with VectorChord (critical dependency)",
@@ -30,55 +136,6 @@
         "ghcr.io/immich-app/postgres"
       ],
       "enabled": false
-    },
-    {
-      "description": "Group Immich stack updates",
-      "matchDatasources": ["docker"],
-      "matchPackageNames": [
-        "ghcr.io/immich-app/immich-server",
-        "ghcr.io/immich-app/immich-machine-learning"
-      ],
-      "groupName": "immich",
-      "versioning": "semver"
-    },
-    {
-      "description": "Group Karakeep stack updates",
-      "matchDatasources": ["docker"],
-      "matchPackageNames": [
-        "ghcr.io/karakeep-app/karakeep",
-        "getmeili/meilisearch",
-        "gcr.io/zenika-hub/alpine-chrome"
-      ],
-      "groupName": "karakeep"
-    },
-    {
-      "description": "Group Paperless stack updates",
-      "matchDatasources": ["docker"],
-      "matchPackageNames": [
-        "ghcr.io/paperless-ngx/paperless-ngx",
-        "apache/tika",
-        "gotenberg/gotenberg"
-      ],
-      "groupName": "paperless",
-      "versioning": "semver"
-    },
-    {
-      "description": "Group shared services updates",
-      "matchDatasources": ["docker"],
-      "matchPackageNames": [
-        "postgres",
-        "redis"
-      ],
-      "groupName": "shared-services"
-    },
-    {
-      "description": "Group ArgoCD stack updates",
-      "matchDatasources": ["docker"],
-      "matchPackageNames": [
-        "quay.io/argoproj/argocd",
-        "ghcr.io/dexidp/dex"
-      ],
-      "groupName": "argocd"
     },
     {
       "description": "Track Miniflux (semver)",
@@ -109,5 +166,9 @@
       "allowedVersions": "/-chromium-bundled$/",
       "versioning": "loose"
     }
-  ]
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["security"]
+  }
 }
