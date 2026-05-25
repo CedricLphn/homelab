@@ -6,14 +6,15 @@ This directory contains example Talos Linux configurations for the homelab clust
 
 - **Talos Version**: v1.13.2
 - **Kubernetes Version**: v1.36.0
-- **CNI**: Default (Flannel alternative configuration available)
+- **CNI**: Cilium (`patches/cilium-cni.yaml`) with kube-proxy disabled
 - **Control Plane Endpoint**: Configure your own endpoint
 
 ## Files
 
 - `controlplane.yaml.example` - Control plane node configuration template
 - `worker.yaml.example` - Worker node configuration template
-- `patches/` - Configuration patches (e.g., CNI customization)
+- `patches/cilium-cni.yaml` - Disables Talos default CNI and kube-proxy (replaced by Cilium eBPF)
+- `patches/flannel-cni.yaml` - Legacy patch to use Flannel CNI (kept for reference only — no longer used)
 
 ## Setup Instructions
 

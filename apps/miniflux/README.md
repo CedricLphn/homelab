@@ -6,7 +6,7 @@
 
 ## English
 
-Kubernetes deployment of Miniflux with Kustomize, integrating Bitwarden External Secrets Operator, Tailscale Operator, and OIDC authentication via Authelia.
+Kubernetes deployment of Miniflux with Kustomize, integrating Bitwarden External Secrets Operator, Traefik (Gateway API), and OIDC authentication via Authelia.
 
 ### Architecture
 
@@ -19,7 +19,7 @@ Kubernetes deployment of Miniflux with Kustomize, integrating Bitwarden External
 - Kubernetes cluster (Talos Linux)
 - Kustomize
 - Bitwarden External Secrets Operator configured with a `ClusterSecretStore` named `bitwarden-cluster-secretstore`
-- Tailscale Operator installed
+- Traefik (Gateway API) installed in the cluster
 - StorageClass `local-path` configured
 - Authelia configured with an OIDC client for Miniflux
 
@@ -34,7 +34,7 @@ Add the following client to Authelia configuration (`identity_providers.oidc.cli
   public: false
   authorization_policy: 'two_factor'
   redirect_uris:
-    - 'https://miniflux.<your-tailnet-id>.ts.net/oauth2/oidc/callback'
+    - 'https://miniflux.homelab.lastsector.lan/oauth2/oidc/callback'
   scopes:
     - 'openid'
     - 'profile'
@@ -99,7 +99,7 @@ value: https://auth.example.com
 
 Modify `base/miniflux-deployment.yaml`:
 
-- `BASE_URL`: Tailscale URL of your instance
+- `BASE_URL interne URL of your instance
 - `OAUTH2_REDIRECT_URL`: OIDC callback URL (must match Authelia)
 - `OAUTH2_USER_CREATION`: 1 to automatically create OIDC users
 
@@ -117,14 +117,14 @@ kubectl apply -k miniflux/base/
 
 ### Access
 
-The application is exposed via Tailscale Operator.
+The application is exposed via Traefik (Gateway API).
 
-To get the Tailscale URL:
+To get the URL interne:
 ```bash
 kubectl get ingress -n miniflux
 ```
 
-Access URL: `https://miniflux.<your-tailnet-id>.ts.net`
+Access URL: `https://miniflux.homelab.lastsector.lan`
 
 ### Initial Configuration
 
@@ -139,7 +139,7 @@ OIDC users are automatically created on first login if `OAUTH2_USER_CREATION=1`.
 
 #### First Access
 
-1. Access the Tailscale URL
+1. Access the URL interne
 2. Log in via OIDC or with the admin account
 3. Configure RSS/Atom feeds in settings
 
@@ -204,7 +204,7 @@ Official documentation: https://miniflux.app/docs/
 
 ## Français
 
-Déploiement Kubernetes de Miniflux avec Kustomize, intégrant Bitwarden External Secrets Operator, Tailscale Operator et authentification OIDC via Authelia.
+Déploiement Kubernetes de Miniflux avec Kustomize, intégrant Bitwarden External Secrets Operator, Traefik (Gateway API) et authentification OIDC via Authelia.
 
 ### Architecture
 
@@ -217,7 +217,7 @@ Déploiement Kubernetes de Miniflux avec Kustomize, intégrant Bitwarden Externa
 - Cluster Kubernetes (Talos Linux)
 - Kustomize
 - Bitwarden External Secrets Operator configuré avec un `ClusterSecretStore` nommé `bitwarden-cluster-secretstore`
-- Tailscale Operator installé
+- Traefik (Gateway API) installé dans le cluster
 - StorageClass `local-path` configurée
 - Authelia configuré avec un client OIDC pour Miniflux
 
@@ -232,7 +232,7 @@ Ajouter le client suivant dans la configuration Authelia (`identity_providers.oi
   public: false
   authorization_policy: 'two_factor'
   redirect_uris:
-    - 'https://miniflux.<your-tailnet-id>.ts.net/oauth2/oidc/callback'
+    - 'https://miniflux.homelab.lastsector.lan/oauth2/oidc/callback'
   scopes:
     - 'openid'
     - 'profile'
@@ -297,7 +297,7 @@ value: https://auth.example.com
 
 Modifier `base/miniflux-deployment.yaml`:
 
-- `BASE_URL`: URL Tailscale de votre instance
+- `BASE_URL`: URL interne de votre instance
 - `OAUTH2_REDIRECT_URL`: URL de callback OIDC (doit correspondre à Authelia)
 - `OAUTH2_USER_CREATION`: 1 pour créer automatiquement les utilisateurs OIDC
 
@@ -315,14 +315,14 @@ kubectl apply -k miniflux/base/
 
 ### Accès
 
-L'application est exposée via Tailscale Operator.
+L'application est exposée via Traefik (Gateway API).
 
-Pour obtenir l'URL Tailscale:
+Pour obtenir l'URL interne:
 ```bash
 kubectl get ingress -n miniflux
 ```
 
-URL d'accès : `https://miniflux.<your-tailnet-id>.ts.net`
+URL d'accès : `https://miniflux.homelab.lastsector.lan`
 
 ### Configuration initiale
 
@@ -337,7 +337,7 @@ Les utilisateurs OIDC sont automatiquement créés lors de la première connexio
 
 #### Premier accès
 
-1. Accéder à l'URL Tailscale
+1. Accéder à l'URL interne
 2. Se connecter via OIDC ou avec le compte admin
 3. Configurer les flux RSS/Atom dans les réglages
 

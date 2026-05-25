@@ -1,0 +1,53 @@
+deployment:
+  replicas: 1
+
+providers:
+  kubernetesGateway:
+    enabled: true
+    statusAddress:
+      service:
+        namespace: traefik
+        name: traefik
+  kubernetesIngress:
+    enabled: false
+  kubernetesCRD:
+    enabled: false
+
+gateway:
+  enabled: false
+
+gatewayClass:
+  enabled: true
+
+service:
+  enabled: true
+  type: LoadBalancer
+  labels:
+    io.cilium/lb-l2-announce: "true"
+
+ports:
+  web:
+    port: 80
+    expose:
+      default: true
+    exposedPort: 80
+  websecure:
+    port: 443
+    expose:
+      default: true
+    exposedPort: 443
+
+ingressRoute:
+  dashboard:
+    enabled: false
+
+logs:
+  general:
+    level: INFO
+  access:
+    enabled: false
+
+metrics:
+  prometheus:
+    service:
+      enabled: false

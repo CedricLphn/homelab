@@ -11,7 +11,7 @@ resources:
 - miniflux-deployment.yaml
 - miniflux-service.yaml
 - external-secrets.yaml
-- tailscale-ingress.yaml
+- httproute.yaml
 
 commonLabels:
   app.kubernetes.io/part-of: miniflux

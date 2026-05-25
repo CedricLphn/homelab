@@ -9,7 +9,7 @@ resources:
   - pvc.yaml
   - deployment.yaml
   - service.yaml
-  - tailscale-ingress.yaml
+  - httproute.yaml
 
 labels:
   - pairs:

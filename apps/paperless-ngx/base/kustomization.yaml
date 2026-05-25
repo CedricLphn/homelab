@@ -17,7 +17,7 @@ resources:
 - paperless-deployment.yaml
 - paperless-service.yaml
 - external-secrets.yaml
-- tailscale-ingress.yaml
+- httproute.yaml
 
 commonLabels:
   app.kubernetes.io/part-of: paperless-ngx

@@ -23,12 +23,12 @@ Radicale est un serveur CalDAV et CardDAV léger et open-source pour la synchron
 - **Radicale**: Serveur CalDAV/CardDAV
 - **Stockage**: PVC de 5Gi pour les collections
 - **Authentification**: Fichier htpasswd avec encryption bcrypt
-- **Accès**: Ingress Tailscale avec TLS automatique
+- **Accès**: HTTPRoute avec TLS automatique
 
 ### Prérequis
 
 - StorageClass `local-path` configuré
-- Tailscale Operator pour l'ingress
+- Traefik (Gateway API) pour l'ingress
 
 ## Configuration des utilisateurs
 
@@ -91,9 +91,9 @@ kubectl logs -f deployment/radicale -n radicale
 
 ## Accès
 
-L'application est accessible via Tailscale à l'adresse :
+L'application est accessible via Traefik (Gateway API) à l'adresse :
 ```
-https://radicale.tail<tailnet-id>.ts.net
+https://radicale.homelab.lastsector.lan
 ```
 
 ## Configuration des clients
@@ -103,7 +103,7 @@ https://radicale.tail<tailnet-id>.ts.net
 1. Installer DAVx5 depuis F-Droid ou Google Play
 2. Ajouter un compte
 3. Choisir "Se connecter avec une URL et un nom d'utilisateur"
-4. URL de base : `https://radicale.tail<tailnet-id>.ts.net/`
+4. URL de base : `https://radicale.homelab.lastsector.lan/`
 5. Nom d'utilisateur : `admin` (ou votre utilisateur htpasswd)
 6. Mot de passe : `admin123` (ou votre mot de passe)
 7. Sélectionner les calendriers et carnets d'adresses à synchroniser
@@ -113,23 +113,23 @@ https://radicale.tail<tailnet-id>.ts.net
 1. Installer Thunderbird
 2. Pour les calendriers : Fichier → Nouveau → Calendrier → Sur le réseau
 3. Format : CalDAV
-4. URL : `https://radicale.tail<tailnet-id>.ts.net/username/calendar.ics/`
+4. URL : `https://radicale.homelab.lastsector.lan/username/calendar.ics/`
 5. Pour les contacts : Carnet d'adresses → Nouveau → Carnet d'adresses CardDAV
-6. URL : `https://radicale.tail<tailnet-id>.ts.net/username/contacts.vcf/`
+6. URL : `https://radicale.homelab.lastsector.lan/username/contacts.vcf/`
 
 ### Apple Calendar / Contacts (macOS/iOS)
 
 **Calendrier:**
 1. Réglages → Calendrier → Comptes → Ajouter un compte
 2. Choisir "Autre" → "Ajouter un compte CalDAV"
-3. Serveur : `radicale.tail<tailnet-id>.ts.net`
+3. Serveur : `radicale.homelab.lastsector.lan`
 4. Nom d'utilisateur et mot de passe
 5. Activer SSL
 
 **Contacts:**
 1. Réglages → Contacts → Comptes → Ajouter un compte
 2. Choisir "Autre" → "Ajouter un compte CardDAV"
-3. Serveur : `radicale.tail<tailnet-id>.ts.net`
+3. Serveur : `radicale.homelab.lastsector.lan`
 4. Nom d'utilisateur et mot de passe
 5. Activer SSL
 
@@ -243,7 +243,7 @@ kubectl logs -n radicale deployment/radicale
 
 2. **Tester l'authentification** :
    ```bash
-   curl -v https://radicale.tail<tailnet-id>.ts.net/ -u admin:admin123
+   curl -v https://radicale.homelab.lastsector.lan/ -u admin:admin123
    ```
 
 3. **Vérifier les logs Radicale** :
@@ -253,13 +253,13 @@ kubectl logs -n radicale deployment/radicale
 
 ### Les clients ne peuvent pas se connecter
 
-1. **Vérifier l'ingress Tailscale** :
+1. **Vérifier l'HTTPRoute** :
    ```bash
    kubectl get ingress -n radicale
    ```
 
 2. **Tester l'accès depuis un navigateur** :
-   - Ouvrir `https://radicale.tail<tailnet-id>.ts.net/`
+   - Ouvrir `https://radicale.homelab.lastsector.lan/`
    - Vous devriez voir une popup d'authentification HTTP Basic
    - Entrer les credentials htpasswd (admin/admin123 par défaut)
    - L'interface web Radicale devrait s'afficher
@@ -305,5 +305,5 @@ kubectl exec -n radicale deployment/radicale -- chown -R 2999:2999 /data
 - **Isolation** : Radicale (via `radicale.rights.owner_only`) garantit que chaque utilisateur accède uniquement à ses propres collections
 - **Interface web** : Accessible à la racine `/` pour consulter et gérer les collections
 - **URLs des collections** : Format `/<username>/<collection>/` (ex: `/admin/calendar.ics/`)
-- **HTTPS** : Géré automatiquement par Tailscale Ingress
+- **HTTPS** : Géré automatiquement par Traefik HTTPRoute
 - **Sécurité** : Authentification HTTP Basic avec hashes bcrypt stockés dans un Secret Kubernetes

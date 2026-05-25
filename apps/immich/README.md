@@ -6,7 +6,7 @@
 
 ## English
 
-Kubernetes deployment of Immich with Kustomize, integrating Bitwarden External Secrets Operator and Tailscale Operator.
+Kubernetes deployment of Immich with Kustomize, integrating Bitwarden External Secrets Operator and Traefik (Gateway API).
 
 ### Architecture
 
@@ -20,7 +20,7 @@ Kubernetes deployment of Immich with Kustomize, integrating Bitwarden External S
 - Kubernetes cluster
 - Kustomize
 - Bitwarden External Secrets Operator configured with a `ClusterSecretStore` named `bitwarden-cluster-secretstore`
-- Tailscale Operator installed
+- Traefik (Gateway API) installed in the cluster
 - StorageClass `local-path` configured
 
 ### Bitwarden Secrets
@@ -70,14 +70,14 @@ kubectl apply -k base/
 
 ### Access
 
-The application is exposed via Tailscale Operator. The service will be automatically accessible on your Tailscale network.
+The application is exposed via Traefik (Gateway API). The service will be automatically accessible on your Traefik network.
 
 To get the URL:
 ```bash
 kubectl get ingress -n immich
 ```
 
-The URL will be in the format `https://immich.<tailnet>.ts.net`
+The URL will be in the format `https://immich.homelab.lastsector.lan`
 
 ### Post-Installation Configuration
 
@@ -116,7 +116,7 @@ Official documentation: https://docs.immich.app/
 
 ## Français
 
-Déploiement Kubernetes d'Immich avec Kustomize, intégrant Bitwarden External Secrets Operator et Tailscale Operator.
+Déploiement Kubernetes d'Immich avec Kustomize, intégrant Bitwarden External Secrets Operator et Traefik (Gateway API).
 
 ### Architecture
 
@@ -130,7 +130,7 @@ Déploiement Kubernetes d'Immich avec Kustomize, intégrant Bitwarden External S
 - Cluster Kubernetes
 - Kustomize
 - Bitwarden External Secrets Operator configuré avec un `ClusterSecretStore` nommé `bitwarden-cluster-secretstore`
-- Tailscale Operator installé
+- Traefik (Gateway API) installé dans le cluster
 - StorageClass `local-path` configurée
 
 ### Secrets Bitwarden
@@ -180,14 +180,14 @@ kubectl apply -k base/
 
 ### Accès
 
-L'application est exposée via Tailscale Operator. Le service sera automatiquement accessible sur votre réseau Tailscale.
+L'application est exposée via Traefik (Gateway API). Le service sera automatiquement accessible sur votre LAN.
 
 Pour obtenir l'URL:
 ```bash
 kubectl get ingress -n immich
 ```
 
-L'URL sera de la forme `https://immich.<tailnet>.ts.net`
+L'URL sera de la forme `https://immich.homelab.lastsector.lan`
 
 ### Configuration post-installation
 

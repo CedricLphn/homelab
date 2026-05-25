@@ -86,7 +86,7 @@ Une fois déployé, pour modifier tes applications:
 ## Surveillance
 
 Après déploiement, surveille l'état dans l'interface ArgoCD:
-- **URL**: `http://argocd.tail<your-id>.ts.net`
+- **URL**: `https://argocd.homelab.lastsector.lan`
 - **Username**: `admin`
 - **Password**: `password`
 

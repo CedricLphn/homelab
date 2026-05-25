@@ -6,20 +6,20 @@
 
 ## English
 
-Kubernetes deployment of ArgoCD with Kustomize, integrating Bitwarden External Secrets Operator, Tailscale Operator, and OIDC authentication via Authelia.
+Kubernetes deployment of ArgoCD with Kustomize, integrating Bitwarden External Secrets Operator, Traefik (Gateway API), and OIDC authentication via Authelia.
 
 ### Architecture
 
 - **ArgoCD v2.13.2**: GitOps continuous delivery tool
 - **Authelia OIDC**: OpenID Connect authentication
-- **Tailscale**: Private network ingress
+- **Ingress (Traefik Gateway API)**: Private network ingress
 
 ### Prerequisites
 
 - Kubernetes cluster (Talos Linux)
 - Kustomize
 - Bitwarden External Secrets Operator configured with a `ClusterSecretStore` named `bitwarden-cluster-secretstore`
-- Tailscale Operator installed
+- Traefik (Gateway API) installed in the cluster
 - Authelia configured with an OIDC client for ArgoCD
 
 ### Authelia Configuration
@@ -33,7 +33,7 @@ Add the following client to Authelia configuration (`identity_providers.oidc.cli
   public: false
   authorization_policy: 'two_factor'
   redirect_uris:
-    - 'https://argocd.<your-tailnet-id>.ts.net/auth/callback'
+    - 'https://argocd.homelab.lastsector.lan/auth/callback'
   scopes:
     - 'openid'
     - 'profile'
@@ -94,7 +94,7 @@ Use the plaintext in Bitwarden, and the hashed version in Authelia configuration
 
 Modify `base/argocd-cm-patch.yaml`:
 
-- `url`: Tailscale URL of your instance
+- `url`: URL interne of your instance
 - `issuer`: Authelia OIDC issuer URL
 - `repositories`: Add your Git repository URL
 
@@ -126,7 +126,7 @@ kubectl rollout restart deployment/authelia -n authelia
 #### Step 3: Update ArgoCD Configuration
 
 Edit `base/argocd-cm-patch.yaml` and update:
-- `url`: Your Tailscale URL (e.g., `https://argocd.<your-tailnet-id>.ts.net`)
+- `url`: Your URL interne (e.g., `https://argocd.homelab.lastsector.lan`)
 - `issuer`: Your Authelia URL (e.g., `https://auth.example.com`)
 - `repositories`: Your Git repository URL
 
@@ -152,20 +152,20 @@ kubectl get externalsecret -n argocd
 
 ### Access
 
-The application is exposed via Tailscale Operator.
+The application is exposed via Traefik (Gateway API).
 
-To get the Tailscale URL:
+To get the URL interne:
 ```bash
 kubectl get ingress -n argocd
 ```
 
-Access URL: `https://argocd.<your-tailnet-id>.ts.net`
+Access URL: `https://argocd.homelab.lastsector.lan`
 
 ### Initial Configuration
 
 #### First Login
 
-1. Access the Tailscale URL
+1. Access the URL interne
 2. Click "Log in via Authelia"
 3. Authenticate with your Authelia account (must be in `argocd-admins` or `argocd-users` group)
 
@@ -245,12 +245,12 @@ sudo mv argocd /usr/local/bin/
 #### CLI Login
 
 ```bash
-argocd login argocd.<your-tailnet-id>.ts.net --sso
+argocd login argocd.homelab.lastsector.lan --sso
 ```
 
 Or with admin account:
 ```bash
-argocd login argocd.<your-tailnet-id>.ts.net --username admin --password <password>
+argocd login argocd.homelab.lastsector.lan --username admin --password <password>
 ```
 
 #### Update
@@ -306,7 +306,7 @@ argocd app list
 
 2. Verify redirect URI matches exactly:
    ```
-   https://argocd.<your-tailnet-id>.ts.net/auth/callback
+   https://argocd.homelab.lastsector.lan/auth/callback
    ```
 
 3. Check ArgoCD OIDC configuration:
@@ -361,20 +361,20 @@ Official documentation: https://argo-cd.readthedocs.io/
 
 ## Français
 
-Déploiement Kubernetes d'ArgoCD avec Kustomize, intégrant Bitwarden External Secrets Operator, Tailscale Operator et authentification OIDC via Authelia.
+Déploiement Kubernetes d'ArgoCD avec Kustomize, intégrant Bitwarden External Secrets Operator, Traefik (Gateway API) et authentification OIDC via Authelia.
 
 ### Architecture
 
 - **ArgoCD v2.13.2**: Outil de livraison continue GitOps
 - **Authelia OIDC**: Authentification OpenID Connect
-- **Tailscale**: Ingress réseau privé
+- **Ingress (Traefik Gateway API)**: Ingress réseau privé
 
 ### Prérequis
 
 - Cluster Kubernetes (Talos Linux)
 - Kustomize
 - Bitwarden External Secrets Operator configuré avec un `ClusterSecretStore` nommé `bitwarden-cluster-secretstore`
-- Tailscale Operator installé
+- Traefik (Gateway API) installé dans le cluster
 - Authelia configuré avec un client OIDC pour ArgoCD
 
 ### Configuration Authelia
@@ -388,7 +388,7 @@ Ajouter le client suivant dans la configuration Authelia (`identity_providers.oi
   public: false
   authorization_policy: 'two_factor'
   redirect_uris:
-    - 'https://argocd.<your-tailnet-id>.ts.net/auth/callback'
+    - 'https://argocd.homelab.lastsector.lan/auth/callback'
   scopes:
     - 'openid'
     - 'profile'
@@ -449,7 +449,7 @@ Utiliser le secret en clair dans Bitwarden, et la version hashée dans la config
 
 Modifier `base/argocd-cm-patch.yaml`:
 
-- `url`: URL Tailscale de votre instance
+- `url`: URL interne de votre instance
 - `issuer`: URL de l'émetteur OIDC Authelia
 - `repositories`: Ajouter l'URL de votre dépôt Git
 
@@ -481,7 +481,7 @@ kubectl rollout restart deployment/authelia -n authelia
 #### Étape 3: Mettre à jour la configuration ArgoCD
 
 Éditer `base/argocd-cm-patch.yaml` et mettre à jour:
-- `url`: Votre URL Tailscale (ex: `https://argocd.<your-tailnet-id>.ts.net`)
+- `url`: Votre URL interne (ex: `https://argocd.homelab.lastsector.lan`)
 - `issuer`: Votre URL Authelia (ex: `https://auth.example.com`)
 - `repositories`: L'URL de votre dépôt Git
 
@@ -507,20 +507,20 @@ kubectl get externalsecret -n argocd
 
 ### Accès
 
-L'application est exposée via Tailscale Operator.
+L'application est exposée via Traefik (Gateway API).
 
-Pour obtenir l'URL Tailscale:
+Pour obtenir l'URL interne:
 ```bash
 kubectl get ingress -n argocd
 ```
 
-URL d'accès : `https://argocd.<your-tailnet-id>.ts.net`
+URL d'accès : `https://argocd.homelab.lastsector.lan`
 
 ### Configuration initiale
 
 #### Première connexion
 
-1. Accéder à l'URL Tailscale
+1. Accéder à l'URL interne
 2. Cliquer sur "Log in via Authelia"
 3. S'authentifier avec votre compte Authelia (doit être dans le groupe `argocd-admins` ou `argocd-users`)
 
@@ -600,12 +600,12 @@ sudo mv argocd /usr/local/bin/
 #### Connexion CLI
 
 ```bash
-argocd login argocd.<your-tailnet-id>.ts.net --sso
+argocd login argocd.homelab.lastsector.lan --sso
 ```
 
 Ou avec le compte admin:
 ```bash
-argocd login argocd.<your-tailnet-id>.ts.net --username admin --password <password>
+argocd login argocd.homelab.lastsector.lan --username admin --password <password>
 ```
 
 #### Mise à jour
@@ -661,7 +661,7 @@ argocd app list
 
 2. Vérifier que l'URI de redirection correspond exactement:
    ```
-   https://argocd.<your-tailnet-id>.ts.net/auth/callback
+   https://argocd.homelab.lastsector.lan/auth/callback
    ```
 
 3. Vérifier la configuration OIDC d'ArgoCD:

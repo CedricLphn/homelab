@@ -6,8 +6,8 @@ Application web auto-hébergée permettant d'effectuer diverses opérations sur 
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    Tailscale Mesh                       │
-│              stirling-pdf.tail<id>.ts.net               │
+│                    LAN via Traefik                       │
+│              stirling-pdf.homelab.lastsector.lan               │
 └─────────────────────┬───────────────────────────────────┘
                       │
 ┌─────────────────────▼───────────────────────────────────┐
@@ -41,7 +41,7 @@ Application web auto-hébergée permettant d'effectuer diverses opérations sur 
 
 - Kubernetes cluster avec Talos Linux
 - StorageClass `local-path` configurée
-- Tailscale Operator installé
+- Traefik (Gateway API) installé dans le cluster
 
 ## Déploiement
 
@@ -59,8 +59,8 @@ kubectl logs -f deployment/stirling-pdf -n stirling-pdf
 
 ## Accès
 
-L'application est accessible via Tailscale :
-- URL : `https://stirling-pdf.tail<your-tailnet-id>.ts.net`
+L'application est accessible via Traefik (Gateway API) :
+- URL : `https://stirling-pdf.homelab.lastsector.lan`
 
 ## Configuration
 

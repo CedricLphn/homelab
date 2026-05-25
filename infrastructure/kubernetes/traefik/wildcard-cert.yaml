@@ -1,0 +1,20 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wildcard-internal-tls
+  namespace: traefik
+spec:
+  secretName: wildcard-internal-tls
+  duration: 8760h
+  renewBefore: 720h
+  commonName: "*.homelab.lastsector.lan"
+  dnsNames:
+    - "*.homelab.lastsector.lan"
+    - "homelab.lastsector.lan"
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: homelab-ca-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io

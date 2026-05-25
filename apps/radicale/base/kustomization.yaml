@@ -14,4 +14,4 @@ resources:
   - external-secrets.yaml
   - deployment.yaml
   - service.yaml
-  - tailscale-ingress.yaml
+  - httproute.yaml

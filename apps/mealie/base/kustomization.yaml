@@ -7,7 +7,7 @@ resources:
   - external-secrets.yaml
   - mealie-deployment.yaml
   - mealie-service.yaml
-  - tailscale-ingress.yaml
+  - httproute.yaml
 labels:
   - pairs:
       app.kubernetes.io/part-of: mealie

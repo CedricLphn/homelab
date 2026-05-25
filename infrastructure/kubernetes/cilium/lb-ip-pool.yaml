@@ -1,0 +1,7 @@
+apiVersion: cilium.io/v2
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: homelab-lan-pool
+spec:
+  blocks:
+    - cidr: <LAN-LB-CIDR>

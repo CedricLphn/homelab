@@ -6,8 +6,8 @@ Générateur de flux RSS open-source pour sites web sans flux natifs. RSSHub per
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│                   Tailscale Mesh                         │
-│               rsshub.tail<id>.ts.net                     │
+│                   LAN via Traefik                         │
+│               rsshub.homelab.lastsector.lan                     │
 └────────────────────┬─────────────────────────────────────┘
                      │
 ┌────────────────────▼─────────────────────────────────────┐
@@ -35,12 +35,12 @@ Générateur de flux RSS open-source pour sites web sans flux natifs. RSSHub per
 - **Cache Redis** : Performance optimisée avec mise en cache (1h TTL)
 - **Support multilingue** : Routes pour sites du monde entier
 - **Format RSS standard** : Compatible avec tous les lecteurs RSS
-- **Pas d'authentification** : Accès simplifié protégé par Tailscale VPN
+- **Pas d'authentification** : Accès simplifié protégé par WireGuard VPN (LAN router)
 
 ## Prérequis
 
 - Kubernetes cluster avec Talos Linux
-- Tailscale Operator installé
+- Traefik (Gateway API) installé dans le cluster
 - Redis partagé dans namespace `shared-services`
 
 ## Déploiement
@@ -58,7 +58,7 @@ kubectl get pods -n rsshub
 # Consulter les logs
 kubectl logs -f deployment/rsshub -n rsshub
 
-# Vérifier l'ingress Tailscale
+# Vérifier l'HTTPRoute
 kubectl get ingress -n rsshub
 ```
 
@@ -66,8 +66,8 @@ Le démarrage prend environ 30-60 secondes. Attendez que le pod soit en état `R
 
 ## Accès
 
-L'application est accessible via Tailscale :
-- URL : `https://rsshub.tail<your-tailnet-id>.ts.net`
+L'application est accessible via Traefik (Gateway API) :
+- URL : `https://rsshub.homelab.lastsector.lan`
 
 Pour obtenir l'URL exacte :
 ```bash
@@ -101,7 +101,7 @@ Le cache stocke les routes et le contenu pendant 1 heure pour réduire la charge
 
 ### Exemples de routes populaires
 
-Remplacez `<rsshub-url>` par votre URL Tailscale complète.
+Remplacez `<rsshub-url>` par votre URL interne complète.
 
 **GitHub - Commits d'un repository :**
 ```
@@ -135,7 +135,7 @@ Liste complète des routes disponibles : https://docs.rsshub.app/routes/
 ### Ajouter un flux à votre lecteur RSS
 
 1. Trouvez la route RSSHub correspondante au site souhaité
-2. Copiez l'URL complète (ex: `https://rsshub.tail<id>.ts.net/github/commits/user/repo`)
+2. Copiez l'URL complète (ex: `https://rsshub.homelab.lastsector.lan/github/commits/user/repo`)
 3. Ajoutez cette URL dans votre lecteur RSS (Miniflux, Feedly, etc.)
 
 ## Ressources
@@ -181,18 +181,18 @@ Si les routes prennent trop de temps à charger :
 2. Ajuster `CACHE_EXPIRE` à une valeur plus élevée (ex: 7200 pour 2h)
 3. Réduire `REQUEST_TIMEOUT` si les sources sont souvent inaccessibles
 
-### Tailscale ingress ne fonctionne pas
+### HTTPRoute ne fonctionne pas
 
-Si l'URL Tailscale ne répond pas :
+Si l'URL interne ne répond pas :
 ```bash
 # Vérifier le statut de l'ingress
 kubectl describe ingress rsshub-ingress -n rsshub
 
-# Vérifier les logs Tailscale operator
-kubectl logs -n tailscale deployment/operator --tail=50
+# Vérifier les logs Traefik
+kubectl logs -n traefik deployment/traefik --tail=50
 
-# Vérifier que le device apparaît dans la console Tailscale
-# https://login.tailscale.com/admin/machines
+# Vérifier que le wildcard DNS répond sur le LAN
+dig +short rsshub.homelab.lastsector.lan
 ```
 
 ## Maintenance
@@ -293,7 +293,7 @@ Pour ajouter une protection par clé d'accès aux routes :
 3. Ajouter la variable d'environnement `ACCESS_KEY` dans le deployment
 4. Mettre à jour `kustomization.yaml` pour inclure `external-secrets.yaml`
 
-Les URLs deviennent : `https://rsshub.tail<id>.ts.net/route?key=<ACCESS_KEY>`
+Les URLs deviennent : `https://rsshub.homelab.lastsector.lan/route?key=<ACCESS_KEY>`
 
 ### Cache persistant local
 

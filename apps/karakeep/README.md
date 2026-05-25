@@ -16,7 +16,7 @@ Application de bookmarking self-hosted (anciennement Hoarder) avec tagging autom
 - **Recherche** : Meilisearch dedie dans le namespace
 - **Scraping** : Chrome headless pour extraction de metadonnees et screenshots
 - **Authentification** : Authelia via OIDC (inscriptions desactivees)
-- **Ingress** : Tailscale (`https://karakeep.tail<ID>.ts.net`)
+- **Ingress** : Traefik (`https://karakeep.homelab.lastsector.lan`)
 
 ## Secrets Bitwarden
 

@@ -11,7 +11,7 @@ resources:
   - meilisearch-service.yaml
   - chrome-deployment.yaml
   - chrome-service.yaml
-  - tailscale-ingress.yaml
+  - httproute.yaml
 labels:
   - pairs:
       app.kubernetes.io/part-of: karakeep

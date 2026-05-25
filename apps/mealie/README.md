@@ -13,7 +13,7 @@ Gestionnaire de recettes self-hosted avec import depuis le web, recherche, plani
 - **Base de donnees** : PostgreSQL partagee (`shared-services/postgres`), DB `mealie`
 - **Stockage** : PVC `mealie-data` 10Gi en `local-path` pour `/app/data` (recettes, images, backups)
 - **Authentification** : Authelia via OIDC — groupe `mealie-users` obligatoire, groupe global `admins` pour les droits admin
-- **Ingress** : Tailscale (`https://mealie.tail<ID>.ts.net`)
+- **Ingress** : Traefik (`https://mealie.homelab.lastsector.lan`)
 - **Langue** : francais (fr-FR) configurable par utilisateur en UI, et par defaut au niveau site dans Settings
 
 ## Secrets Bitwarden
@@ -23,7 +23,7 @@ Gestionnaire de recettes self-hosted avec import depuis le web, recherche, plani
 | `mealie-db-password` | Mot de passe Postgres (user `mealie`) |
 | `mealie-oidc-client-id` | Client ID Authelia |
 | `mealie-oidc-client-secret` | Client secret Authelia |
-| `mealie-oidc-wellknown-url` | URL discovery OIDC Authelia (contient l'URL Tailscale privee) |
+| `mealie-oidc-wellknown-url` | URL discovery OIDC Authelia (contient l'URL interne privee) |
 
 ## ConfigMap privee
 
@@ -68,7 +68,7 @@ kubectl exec -n shared-services deployment/postgres -- \
 kubectl get pods -n mealie
 kubectl get externalsecret -n mealie
 kubectl get ingress -n mealie
-curl -sk https://mealie.tail<ID>.ts.net/api/app/about
+curl -sk https://mealie.homelab.lastsector.lan/api/app/about
 ```
 
 `externalsecret` doit etre `SecretSynced`, le pod `Running` et `Ready`, et le endpoint `/api/app/about` retourne du JSON.

@@ -15,7 +15,7 @@ resources:
 - immich-server-deployment.yaml
 - immich-server-service.yaml
 - external-secrets.yaml
-- tailscale-ingress.yaml
+- httproute.yaml
 
 labels:
 - pairs:

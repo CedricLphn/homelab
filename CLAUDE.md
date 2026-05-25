@@ -10,11 +10,15 @@ Personal homelab infrastructure-as-code running self-hosted applications on a ba
 
 - **OS**: Talos Linux v1.13.2 (immutable, API-driven, no SSH)
 - **Kubernetes**: v1.36.0
-- **Deployment**: Kustomize (no Helm, no overlays)
+- **Deployment**: Kustomize (no Helm for apps; infra components like Cilium/cert-manager/Traefik installed by Helm out-of-band, only homelab config GitOps-managed)
+- **CNI / Service LB**: Cilium (eBPF, kube-proxy-replacement, LB-IPAM, L2 announcements). Talos machine config has `cluster.network.cni.name=none` and `cluster.proxy.disabled=true`
+- **Routing**: Traefik v3 implementing Kubernetes Gateway API v1.4 (`HTTPRoute`, not legacy `Ingress`)
+- **TLS**: cert-manager with self-signed Homelab Root CA (`homelab-ca-issuer` ClusterIssuer). Wildcard cert `*.homelab.lastsector.lan` on the Gateway listener
+- **DNS**: the LAN router / DNS server resolves `*.homelab.lastsector.lan` → Cilium LB-IPAM IP
+- **Remote access**: WireGuard on the LAN router (outside the cluster)
 - **Storage**: local-path-provisioner (StorageClass: `local-path`)
 - **Secrets**: Bitwarden Secrets Manager via External Secrets Operator
-- **Ingress**: Tailscale Operator (private mesh VPN)
-- **Authentication**: Authelia (OIDC/OAuth2)
+- **Authentication**: Authelia (OIDC/OAuth2, external to cluster)
 
 ## Repository Structure
 
@@ -28,9 +32,14 @@ homelab/
 │   ├── miniflux/               # RSS reader
 │   ├── karakeep/               # Bookmark manager (ex-Hoarder)
 │   └── shared-services/        # Shared PostgreSQL + Redis
+├── argocd-apps/                # ArgoCD Application CRDs (app-of-apps)
 ├── infrastructure/
-│   ├── talos/                  # Talos config templates (.example files)
+│   ├── talos/                  # Talos config templates (.example files) + patches
 │   └── kubernetes/
+│       ├── cilium/             # Cilium LB-IPAM pool + L2 announcement
+│       ├── gateway-api/        # Gateway API v1.4 CRDs
+│       ├── cert-manager/       # Homelab Root CA + ClusterIssuer
+│       ├── traefik/            # Traefik Gateway + wildcard cert
 │       └── external-secrets/   # ESO + Bitwarden setup
 ├── docs/
 │   └── architecture.md         # Infrastructure architecture (bilingual)
@@ -70,36 +79,38 @@ storageClassName: local-path
 Secret naming convention: `<app>-<component>-<type>`
 - Example: `immich-db-password`, `paperless-oauth-providers`
 
-### Tailscale Ingress
+### Gateway API + Traefik Routing
 
-Use standard Kubernetes Ingress with TLS for automatic HTTPS:
+Each application exposes itself via a single `HTTPRoute` attached to the cluster-wide `homelab-gateway` Gateway in the `traefik` namespace. The Gateway terminates TLS with a wildcard `*.homelab.lastsector.lan` cert issued by cert-manager from the Homelab Root CA.
+
 ```yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
 metadata:
-  name: <app>-ingress
-  annotations:
-    tailscale.com/hostname: <short-hostname>
+  name: <app>
+  namespace: <namespace>
 spec:
-  ingressClassName: tailscale
-  tls:
-    - hosts:
-        - <short-hostname>
+  parentRefs:
+    - name: homelab-gateway
+      namespace: traefik
+      sectionName: https
+  hostnames:
+    - <app>.homelab.lastsector.lan
   rules:
-    - http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: <service>
-                port:
-                  number: <port>
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: <service>
+          port: <port>
 ```
 
-Tailscale Operator generates URLs: `https://<hostname>.tail<tailnet-id>.ts.net`
+URLs: `https://<app>.homelab.lastsector.lan` (resolved by LAN DNS to the Cilium LB-IPAM IP).
 
-**Important**: Use `tailscale.com/hostname` annotation to get short URLs instead of auto-generated long names.
+**No `ReferenceGrant` needed**: the Gateway allows routes from all namespaces (`allowedRoutes.namespaces.from: All`) and backends live in the same namespace as the HTTPRoute.
+
+**No `Ingress` resources**: legacy `networking.k8s.io/v1 Ingress` is not used. Traefik's Ingress provider is disabled in `infrastructure/kubernetes/traefik/values.yaml`.
 
 ### Shared Services Pattern
 
@@ -122,7 +133,7 @@ Every app follows this exact pattern:
     ├── external-secrets.yaml # Bitwarden secret references
     ├── <component>-deployment.yaml
     ├── <component>-service.yaml
-    └── tailscale-ingress.yaml
+    └── httproute.yaml         # Gateway API HTTPRoute attached to homelab-gateway
 ```
 
 **No overlays** - homelab has single environment, no staging/prod distinction.
@@ -144,10 +155,11 @@ ArgoCD manages all applications with **autosync enabled**. Manual `kubectl` chan
 ## Code Style Conventions
 
 - **No comments in YAML manifests** - keep manifests clean
-- **No Helm** - pure Kustomize only
+- **Apps use pure Kustomize**, no Helm. Heavy infrastructure components (Cilium, cert-manager, Traefik) are installed by Helm out-of-band (matches the External Secrets pattern); only their homelab-specific config is GitOps-managed.
 - **Documentation in French** - app READMEs are in French
 - **Root documentation bilingual** - README.md and docs/ have EN/FR sections
 - All sensitive data uses placeholders in committed files (e.g., `<REDACTED>`, `<YOUR-CONTROL-PLANE-IP>`)
+- **Internal domain**: `*.homelab.lastsector.lan` is committed directly. `.lan` is a reserved non-routable TLD, so nothing about this domain is publicly exploitable.
 
 ## Common Development Commands
 
@@ -159,7 +171,8 @@ kubectl apply -k apps/<app-name>/base/
 ### Check Status
 ```bash
 kubectl get pods -n <namespace>
-kubectl get ingress -n <namespace>
+kubectl get httproute -n <namespace>
+kubectl get certificate -n <namespace>
 kubectl get externalsecrets -n <namespace>  # Check secret sync status
 ```
 
@@ -215,12 +228,12 @@ talosctl upgrade --nodes <node-ip> --image ghcr.io/siderolabs/installer:v1.13.2
     User = get_user_model(); u = User.objects.get(username='USERNAME'); \
     u.is_superuser = True; u.is_staff = True; u.save()"
   ```
-- **CSRF protection**: Requires explicit Tailscale URL:
+- **CSRF protection**: Requires explicit internal URL:
   ```yaml
   - name: PAPERLESS_URL
-    value: https://<app>.tail<id>.ts.net
+    value: https://paperless.homelab.lastsector.lan
   - name: PAPERLESS_CSRF_TRUSTED_ORIGINS
-    value: https://<app>.tail<id>.ts.net
+    value: https://paperless.homelab.lastsector.lan
   ```
 - **OAuth secret**: `paperless-oauth-providers` contains full JSON config in Bitwarden
 - **Dependencies**: Shared PostgreSQL, Redis, Apache Tika, Gotenberg
@@ -231,7 +244,7 @@ talosctl upgrade --nodes <node-ip> --image ghcr.io/siderolabs/installer:v1.13.2
 
 ### ArgoCD
 - **Authentication**: OIDC via Authelia + local admin account
-- **Insecure mode**: Runs without TLS internally (Tailscale handles TLS termination)
+- **Insecure mode**: Runs without TLS internally (Traefik Gateway terminates TLS at the edge)
 - **Configuration**: Use `server.insecure: "true"` in `argocd-cm` ConfigMap (NOT deployment args)
 - **RBAC**: Groups mapped via `argocd-rbac-cm` ConfigMap (`argocd-admins` → `role:admin`)
 - **Private overlay**: Real URLs in `private/argocd/` for deployment
@@ -251,13 +264,13 @@ talosctl upgrade --nodes <node-ip> --image ghcr.io/siderolabs/installer:v1.13.2
 - **Startup time**: First boot takes 2-3 minutes (font installation)
 - **Probes**: Use `startupProbe` with generous timeouts (30s initial, 30 failures allowed)
 - **Health endpoint**: `/api/v1/info/status`
-- **No authentication**: Open access (protected by Tailscale VPN)
+- **No authentication**: Open on LAN (remote access goes through WireGuard on the LAN router)
 - **Dependencies**: None (standalone)
 
 ### Shared Services
 - **PostgreSQL init**: Uses `postgres-init.sh` script with ConfigMap to create multiple databases
 - **Redis**: Single instance with multiple DBs (0, 1)
-- **No Tailscale ingress**: Internal services only
+- **No HTTPRoute**: Internal services only (consumed from inside the cluster via ClusterIP)
 
 ## Known Issues & Solutions
 
@@ -286,18 +299,36 @@ kubectl describe externalsecret <name> -n <namespace>
 kubectl logs -n external-secrets-system deployment/external-secrets
 ```
 
-### Tailscale Ingress Stuck or DNS Stale
-When Tailscale hostname conflicts or DNS returns wrong IP:
-1. Delete device from Tailscale admin console (https://login.tailscale.com/admin/machines)
-2. Remove finalizer if ingress is stuck: `kubectl patch ingress <name> -n <namespace> -p '{"metadata":{"finalizers":null}}' --type=merge`
-3. Delete ingress and recreate: `kubectl delete ingress <name> -n <namespace> && kubectl apply -k apps/<app>/base/`
-4. Check operator logs: `kubectl logs -n tailscale deployment/operator --tail=50`
+### HTTPRoute Not Routing
+If `https://<app>.homelab.lastsector.lan` returns 404 or never connects:
+1. Check the HTTPRoute is Accepted:
+   ```bash
+   kubectl describe httproute <app> -n <namespace>     # look at Conditions
+   ```
+2. Check the Gateway is Programmed and has an address:
+   ```bash
+   kubectl describe gateway homelab-gateway -n traefik
+   ```
+3. Check Traefik picked it up: `kubectl logs -n traefik deploy/traefik | grep -i <app>`
+4. DNS: `dig +short <app>.homelab.lastsector.lan` must return the Cilium LB-IPAM IP
 
-### Tailscale Operator Network Issues
-If operator cannot reach `api.tailscale.com`:
+### Certificate Not Ready
+If the wildcard cert or any per-app Certificate is `Ready=False`:
 ```bash
-kubectl rollout restart deployment/operator -n tailscale
+kubectl describe certificate <name> -n <namespace>
+kubectl describe certificaterequest -n <namespace>
+kubectl logs -n cert-manager deploy/cert-manager
 ```
+Common cause: missing or broken `homelab-ca-issuer` ClusterIssuer (check `homelab-root-ca` secret exists in `cert-manager` namespace).
+
+### Cilium LoadBalancer IP Not Reachable
+If the Traefik Service shows EXTERNAL-IP but the IP doesn't respond:
+```bash
+kubectl get ciliuml2announcementpolicy
+kubectl get ciliumloadbalancerippool
+cilium status
+```
+Check the `interfaces:` list in `homelab-l2-announce` matches the actual NIC name on the node (`talosctl get links --nodes <CONTROL-PLANE-IP>`).
 
 ## Security & Sensitive Data
 

@@ -15,10 +15,14 @@ This repository contains the complete infrastructure-as-code for my personal hom
 **Key Technologies:**
 - **OS**: [Talos Linux](https://www.talos.dev/) v1.13.2 (immutable, secure, minimal)
 - **Kubernetes**: v1.36.0
-- **Deployment**: Kustomize (GitOps-ready)
+- **Deployment**: Kustomize + ArgoCD (GitOps)
+- **CNI / LB**: [Cilium](https://cilium.io/) (eBPF, kube-proxy replacement, LB-IPAM, L2 announce)
+- **Routing**: [Traefik v3](https://traefik.io/) + [Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/) v1.4
+- **TLS**: [cert-manager](https://cert-manager.io/) with self-signed Homelab Root CA, wildcard `*.homelab.lastsector.lan`
+- **DNS**: the LAN router / DNS server internal DNS (`*.homelab.lastsector.lan`)
+- **Remote access**: WireGuard on the LAN router (out of cluster scope)
 - **Storage**: local-path-provisioner
 - **Secrets**: Bitwarden Secrets Manager via External Secrets Operator
-- **Ingress**: Tailscale (secure, private networking)
 - **Authentication**: Authelia (OIDC/OAuth2)
 
 ### 🚀 Deployed Applications
@@ -28,7 +32,7 @@ This repository contains the complete infrastructure-as-code for my personal hom
 | [ArgoCD](https://argo-cd.readthedocs.io/) | GitOps continuous delivery | OIDC (Authelia) + Local admin | - |
 | [Stirling-PDF](https://stirlingtools.com/) | PDF manipulation toolkit | - | 2Gi |
 | [Radicale](https://radicale.org/) | CalDAV/CardDAV server (calendar & contacts sync) | Authelia (forward auth) | 5Gi |
-| [Immich](https://immich.app/) | Photo and video management (Google Photos alternative) | Local + Tailscale | 500Gi library + PostgreSQL |
+| [Immich](https://immich.app/) | Photo and video management (Google Photos alternative) | Local | 500Gi library + PostgreSQL |
 | [Paperless-ngx](https://docs.paperless-ngx.com/) | Document management system | OAuth (Authelia) | 50Gi media + PostgreSQL |
 | [Miniflux](https://miniflux.app/) | Minimalist RSS reader | OIDC (Authelia) + Local admin | PostgreSQL |
 | [Karakeep](https://karakeep.app/) | Bookmark manager (ex-Hoarder) | OIDC (Authelia) | 10Gi data + 5Gi Meilisearch |
@@ -136,10 +140,13 @@ MIT License - Feel free to use this as inspiration for your own homelab!
 
 - [Talos Linux](https://www.talos.dev/)
 - [Kubernetes](https://kubernetes.io/)
+- [Cilium](https://cilium.io/)
+- [Traefik](https://traefik.io/)
+- [Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/)
+- [cert-manager](https://cert-manager.io/)
 - [External Secrets Operator](https://external-secrets.io/)
 - [Bitwarden Secrets Manager](https://bitwarden.com/products/secrets-manager/)
 - [Authelia](https://www.authelia.com/)
-- [Tailscale](https://tailscale.com/)
 
 ---
 
@@ -152,10 +159,14 @@ Ce dépôt contient l'infrastructure complète de mon homelab personnel, fonctio
 **Technologies clés :**
 - **OS** : [Talos Linux](https://www.talos.dev/) v1.13.2 (immuable, sécurisé, minimal)
 - **Kubernetes** : v1.36.0
-- **Déploiement** : Kustomize (prêt pour GitOps)
+- **Déploiement** : Kustomize + ArgoCD (GitOps)
+- **CNI / LB** : [Cilium](https://cilium.io/) (eBPF, kube-proxy replacement, LB-IPAM, L2 announce)
+- **Routage** : [Traefik v3](https://traefik.io/) + [Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/) v1.4
+- **TLS** : [cert-manager](https://cert-manager.io/) avec une CA racine self-signed, certificat wildcard `*.homelab.lastsector.lan`
+- **DNS** : DNS interne the LAN router / DNS server (`*.homelab.lastsector.lan`)
+- **Accès distant** : WireGuard sur le routeur LAN (hors du cluster)
 - **Stockage** : local-path-provisioner
 - **Secrets** : Bitwarden Secrets Manager via External Secrets Operator
-- **Ingress** : Tailscale (réseau privé et sécurisé)
 - **Authentification** : Authelia (OIDC/OAuth2)
 
 ### 🚀 Applications déployées
@@ -165,7 +176,7 @@ Ce dépôt contient l'infrastructure complète de mon homelab personnel, fonctio
 | [ArgoCD](https://argo-cd.readthedocs.io/) | Livraison continue GitOps | OIDC (Authelia) + Admin local | - |
 | [Stirling-PDF](https://stirlingtools.com/) | Boîte à outils PDF | - | 2Gi |
 | [Radicale](https://radicale.org/) | Serveur CalDAV/CardDAV (sync calendriers & contacts) | Authelia (forward auth) | 5Gi |
-| [Immich](https://immich.app/) | Gestion de photos et vidéos (alternative à Google Photos) | Local + Tailscale | 500Gi bibliothèque + PostgreSQL |
+| [Immich](https://immich.app/) | Gestion de photos et vidéos (alternative à Google Photos) | Local | 500Gi bibliothèque + PostgreSQL |
 | [Paperless-ngx](https://docs.paperless-ngx.com/) | Système de gestion documentaire | OAuth (Authelia) | 50Gi média + PostgreSQL |
 | [Miniflux](https://miniflux.app/) | Lecteur RSS minimaliste | OIDC (Authelia) + Admin local | PostgreSQL |
 | [Karakeep](https://karakeep.app/) | Gestionnaire de bookmarks (ex-Hoarder) | OIDC (Authelia) | 10Gi data + 5Gi Meilisearch |
@@ -273,7 +284,10 @@ Licence MIT - N'hésitez pas à utiliser ce projet comme inspiration pour votre 
 
 - [Talos Linux](https://www.talos.dev/)
 - [Kubernetes](https://kubernetes.io/)
+- [Cilium](https://cilium.io/)
+- [Traefik](https://traefik.io/)
+- [Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/)
+- [cert-manager](https://cert-manager.io/)
 - [External Secrets Operator](https://external-secrets.io/)
 - [Bitwarden Secrets Manager](https://bitwarden.com/products/secrets-manager/)
 - [Authelia](https://www.authelia.com/)
-- [Tailscale](https://tailscale.com/)

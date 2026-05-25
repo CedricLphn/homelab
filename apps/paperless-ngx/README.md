@@ -6,7 +6,7 @@
 
 ## English
 
-Kubernetes deployment of Paperless-ngx with Kustomize, integrating Bitwarden External Secrets Operator, Tailscale Operator, and OAuth authentication via Authelia.
+Kubernetes deployment of Paperless-ngx with Kustomize, integrating Bitwarden External Secrets Operator, Traefik (Gateway API), and OAuth authentication via Authelia.
 
 ### Architecture
 
@@ -22,7 +22,7 @@ Kubernetes deployment of Paperless-ngx with Kustomize, integrating Bitwarden Ext
 - Kubernetes cluster (Talos Linux)
 - Kustomize
 - Bitwarden External Secrets Operator configured with a `ClusterSecretStore` named `bitwarden-cluster-secretstore`
-- Tailscale Operator installed
+- Traefik (Gateway API) installed in the cluster
 - StorageClass `local-path` configured
 - Authelia configured and operational
 
@@ -95,7 +95,7 @@ identity_providers:
         public: false
         authorization_policy: two_factor
         redirect_uris:
-          - https://paperless.<your-tailnet-id>.ts.net/accounts/openid_connect/authelia/login/callback/
+          - https://paperless.homelab.lastsector.lan/accounts/openid_connect/authelia/login/callback/
         scopes:
           - openid
           - profile
@@ -113,7 +113,7 @@ To restrict access to the "paperless" group only:
 ```yaml
 access_control:
   rules:
-    - domain: paperless.<your-tailnet-id>.ts.net
+    - domain: paperless.homelab.lastsector.lan
       policy: two_factor
       subject:
         - "group:paperless"
@@ -127,7 +127,7 @@ Modify `base/paperless-deployment.yaml`:
 
 - `PAPERLESS_TIME_ZONE`: Timezone (default: Europe/Paris)
 - `PAPERLESS_OCR_LANGUAGE`: OCR languages (default: fra+eng)
-- `PAPERLESS_URL`: Tailscale URL
+- `PAPERLESS_URL interne URL
 - `PAPERLESS_DISABLE_REGULAR_LOGIN`: true (OAuth only)
 - `PAPERLESS_SOCIALACCOUNT_ALLOW_SIGNUPS`: true (automatic OAuth account creation)
 
@@ -150,14 +150,14 @@ kubectl apply -k base/
 
 ### Access
 
-The application is exposed via Tailscale Operator and accessible only through OAuth Authelia.
+The application is exposed via Traefik (Gateway API) and accessible only through OAuth Authelia.
 
-To get the Tailscale URL:
+To get the URL interne:
 ```bash
 kubectl get ingress -n paperless-ngx
 ```
 
-Access URL: `https://paperless.<your-tailnet-id>.ts.net`
+Access URL: `https://paperless.homelab.lastsector.lan`
 
 ### First OAuth User
 
@@ -198,7 +198,7 @@ Official documentation: https://docs.paperless-ngx.com/
 
 ## Français
 
-Déploiement Kubernetes de Paperless-ngx avec Kustomize, intégrant Bitwarden External Secrets Operator, Tailscale Operator et authentification OAuth via Authelia.
+Déploiement Kubernetes de Paperless-ngx avec Kustomize, intégrant Bitwarden External Secrets Operator, Traefik (Gateway API) et authentification OAuth via Authelia.
 
 ### Architecture
 
@@ -214,7 +214,7 @@ Déploiement Kubernetes de Paperless-ngx avec Kustomize, intégrant Bitwarden Ex
 - Cluster Kubernetes (Talos Linux)
 - Kustomize
 - Bitwarden External Secrets Operator configuré avec un `ClusterSecretStore` nommé `bitwarden-cluster-secretstore`
-- Tailscale Operator installé
+- Traefik (Gateway API) installé dans le cluster
 - StorageClass `local-path` configurée
 - Authelia configuré et opérationnel
 
@@ -287,7 +287,7 @@ identity_providers:
         public: false
         authorization_policy: two_factor
         redirect_uris:
-          - https://paperless.<your-tailnet-id>.ts.net/accounts/openid_connect/authelia/login/callback/
+          - https://paperless.homelab.lastsector.lan/accounts/openid_connect/authelia/login/callback/
         scopes:
           - openid
           - profile
@@ -305,7 +305,7 @@ Pour restreindre l'accès au groupe "paperless" uniquement :
 ```yaml
 access_control:
   rules:
-    - domain: paperless.<your-tailnet-id>.ts.net
+    - domain: paperless.homelab.lastsector.lan
       policy: two_factor
       subject:
         - "group:paperless"
@@ -319,7 +319,7 @@ Modifier `base/paperless-deployment.yaml`:
 
 - `PAPERLESS_TIME_ZONE`: Fuseau horaire (défaut: Europe/Paris)
 - `PAPERLESS_OCR_LANGUAGE`: Langues OCR (défaut: fra+eng)
-- `PAPERLESS_URL`: URL Tailscale
+- `PAPERLESS_URL`: URL interne
 - `PAPERLESS_DISABLE_REGULAR_LOGIN`: true (OAuth uniquement)
 - `PAPERLESS_SOCIALACCOUNT_ALLOW_SIGNUPS`: true (création auto des comptes OAuth)
 
@@ -342,14 +342,14 @@ kubectl apply -k base/
 
 ### Accès
 
-L'application est exposée via Tailscale Operator et accessible uniquement via OAuth Authelia.
+L'application est exposée via Traefik (Gateway API) et accessible uniquement via OAuth Authelia.
 
-Pour obtenir l'URL Tailscale:
+Pour obtenir l'URL interne:
 ```bash
 kubectl get ingress -n paperless-ngx
 ```
 
-URL d'accès : `https://paperless.<your-tailnet-id>.ts.net`
+URL d'accès : `https://paperless.homelab.lastsector.lan`
 
 ### Premier utilisateur OAuth
 

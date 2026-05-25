@@ -14,13 +14,23 @@ This homelab is built on a **bare-metal Kubernetes cluster** running **Talos Lin
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Tailscale Network                        │
-│                  (Private Mesh VPN)                         │
+│  Client (LAN or WireGuard via router)                     │
+│  https://<app>.homelab.lastsector.lan                      │
+└────────────────────┬────────────────────────────────────────┘
+                     │ DNS (router) → Cilium LB-IPAM IP
+                     │ TLS via Homelab CA (cert-manager)
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│            Traefik (Gateway API v1.4 implementer)           │
+│  Service type LoadBalancer ← Cilium L2 announce on LAN      │
+│  Gateway homelab-gateway (HTTPS listener, wildcard cert)    │
+│  Routes via HTTPRoute per app                               │
 └────────────────────┬────────────────────────────────────────┘
                      │
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
 │              Kubernetes Cluster (v1.36.0)                   │
+│  CNI / kube-proxy replacement: Cilium (eBPF)                │
 │                                                             │
 │  ┌──────────────────────────────────────────────────────┐  │
 │  │         Control Plane Node(s)                        │  │
@@ -147,21 +157,20 @@ Application Pods
 - **ExternalSecret**: Per-app secret definitions
 - **Bitwarden SDK Server**: HTTPS proxy with self-signed certificate
 
-#### 5. Ingress: Tailscale
+#### 5. Ingress: Traefik + Gateway API
 
-**Why Tailscale?**
-- Zero-trust network access
-- No port forwarding needed
-- Automatic HTTPS with Tailscale certificates
-- Access from anywhere securely
+**Why Traefik + Gateway API?**
+- Standards-based routing (Gateway API v1.4, stable)
+- Wildcard cert from Homelab CA terminated at the Gateway, all apps share it
+- No annotation soup — `HTTPRoute` is portable across implementers
+- LAN-only exposure; remote access goes through WireGuard on the LAN router
 
 **Configuration:**
-- Tailscale Operator installed in cluster
-- Ingress resources with `ingressClassName: tailscale`
-- Each service gets `https://<service>.tail<id>.ts.net` URL
-- Integrated with Kubernetes service discovery
-
-**No traditional ingress controller** (Nginx, Traefik) needed!
+- Traefik installed via Helm in the `traefik` namespace
+- A single cluster-wide `Gateway` (`homelab-gateway`) with HTTPS listener
+- One `HTTPRoute` per application attaching to the Gateway
+- Each service is reachable at `https://<service>.homelab.lastsector.lan`
+- Cilium's `Service type=LoadBalancer` exposes Traefik on a LAN IP via L2 announce
 
 #### 6. Authentication: Authelia (OIDC/OAuth2)
 
@@ -233,7 +242,7 @@ Each app in `apps/` follows this pattern:
     ├── external-secrets.yaml # Bitwarden secret references
     ├── <component>-deployment.yaml
     ├── <component>-service.yaml
-    └── tailscale-ingress.yaml
+    └── httproute.yaml
 ```
 
 **Kustomize** (not Helm):
@@ -245,11 +254,13 @@ Each app in `apps/` follows this pattern:
 ### Network Flow
 
 ```
-User Device
+User Device (LAN or WireGuard via router)
     ↓
-Tailscale Network (encrypted mesh)
+LAN DNS resolves *.homelab.lastsector.lan → Cilium LB-IPAM IP
     ↓
-Tailscale Ingress (in-cluster)
+Traefik Gateway (TLS terminate, homelab CA)
+    ↓
+HTTPRoute (in-cluster)
     ↓
 Kubernetes Service (ClusterIP)
     ↓
@@ -263,7 +274,7 @@ Shared PostgreSQL/Redis (if applicable)
 #### Defense in Depth
 
 1. **Network Layer**:
-   - Tailscale zero-trust network
+   - LAN DNS + Traefik (LAN)
    - No public exposure
    - Encrypted mesh VPN
 
@@ -300,7 +311,7 @@ Shared PostgreSQL/Redis (if applicable)
 - ✅ OS-level compromise (immutable OS)
 
 **Not Protected Against:**
-- ⚠️ Compromised Tailscale credentials
+- ⚠️ Compromised LAN access (network breached)
 - ⚠️ Kubernetes RBAC bypass
 - ⚠️ Application-level vulnerabilities
 - ⚠️ Physical access to hardware
@@ -377,13 +388,23 @@ Ce homelab est construit sur un **cluster Kubernetes bare-metal** exécutant **T
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Réseau Tailscale                         │
-│                  (VPN Mesh Privé)                           │
+│  Client (LAN ou WireGuard via router)                     │
+│  https://<app>.homelab.lastsector.lan                      │
+└────────────────────┬────────────────────────────────────────┘
+                     │ DNS (router) → IP Cilium LB-IPAM
+                     │ TLS via CA homelab (cert-manager)
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│       Traefik (implémentation Gateway API v1.4)             │
+│  Service type LoadBalancer ← Cilium L2 announce sur LAN     │
+│  Gateway homelab-gateway (listener HTTPS, cert wildcard)    │
+│  Routes via HTTPRoute par app                               │
 └────────────────────┬────────────────────────────────────────┘
                      │
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
 │              Cluster Kubernetes (v1.36.0)                   │
+│  CNI / kube-proxy replacement : Cilium (eBPF)               │
 │                                                             │
 │  ┌──────────────────────────────────────────────────────┐  │
 │  │         Nœud(s) Control Plane                        │  │
@@ -510,18 +531,18 @@ Pods d'application
 - **ExternalSecret** : Définitions de secrets par application
 - **Serveur SDK Bitwarden** : Proxy HTTPS avec certificat auto-signé
 
-#### 5. Ingress : Tailscale
+#### 5. Ingress : Traefik + Gateway API
 
-**Pourquoi Tailscale ?**
+**Pourquoi Traefik + Gateway API ?**
 - Accès réseau zero-trust
 - Pas besoin de port forwarding
-- HTTPS automatique avec certificats Tailscale
+- HTTPS via cert-manager (CA homelab)
 - Accès depuis n'importe où de manière sécurisée
 
 **Configuration :**
-- Opérateur Tailscale installé dans le cluster
-- Ressources Ingress avec `ingressClassName: tailscale`
-- Chaque service obtient une URL `https://<service>.tail<id>.ts.net`
+- Traefik installé via Helm
+- Ressources HTTPRoute attachées au homelab-gateway
+- Chaque service obtient une URL `https://<service>.homelab.lastsector.lan`
 - Intégré avec la découverte de services Kubernetes
 
 **Pas besoin de contrôleur ingress traditionnel** (Nginx, Traefik) !
@@ -596,7 +617,7 @@ Chaque app dans `apps/` suit ce pattern :
     ├── external-secrets.yaml # Références secrets Bitwarden
     ├── <composant>-deployment.yaml
     ├── <composant>-service.yaml
-    └── tailscale-ingress.yaml
+    └── httproute.yaml
 ```
 
 **Kustomize** (pas Helm) :
@@ -608,11 +629,13 @@ Chaque app dans `apps/` suit ce pattern :
 ### Flux réseau
 
 ```
-Appareil utilisateur
+Appareil utilisateur (LAN ou WireGuard via router)
     ↓
-Réseau Tailscale (mesh chiffré)
+DNS interne résout *.homelab.lastsector.lan → IP Cilium LB-IPAM
     ↓
-Ingress Tailscale (dans le cluster)
+Traefik Gateway (terminate TLS, CA homelab)
+    ↓
+HTTPRoute (dans le cluster)
     ↓
 Service Kubernetes (ClusterIP)
     ↓
@@ -626,7 +649,7 @@ PostgreSQL/Redis partagé (si applicable)
 #### Défense en profondeur
 
 1. **Couche réseau** :
-   - Réseau zero-trust Tailscale
+   - DNS interne + Traefik (LAN)
    - Pas d'exposition publique
    - VPN mesh chiffré
 
@@ -663,7 +686,7 @@ PostgreSQL/Redis partagé (si applicable)
 - ✅ Compromission au niveau OS (OS immuable)
 
 **Non protégé contre :**
-- ⚠️ Identifiants Tailscale compromis
+- ⚠️ Accès LAN compromis (réseau pénétré)
 - ⚠️ Contournement RBAC Kubernetes
 - ⚠️ Vulnérabilités au niveau application
 - ⚠️ Accès physique au matériel

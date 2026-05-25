@@ -4,11 +4,11 @@ metadata:
   name: argocd-cm
   namespace: argocd
 data:
-  url: https://argocd.tail<your-tailnet-id>.ts.net
+  url: https://argocd.homelab.lastsector.lan
 
   oidc.config: |
     name: Authelia
-    issuer: https://auth.example.com
+    issuer: https://auth.homelab.lastsector.lan
     clientID: $argocd-oidc-secret:clientID
     clientSecret: $argocd-oidc-secret:clientSecret
     requestedScopes:
