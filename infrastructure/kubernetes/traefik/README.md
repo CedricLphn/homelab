@@ -36,9 +36,11 @@ helm repo update
 helm install traefik traefik/traefik \
   --namespace traefik \
   --create-namespace \
-  --version 33.2.1 \
+  --version 39.0.9 \
   --values infrastructure/kubernetes/traefik/values.yaml
 ```
+
+> Pin chart 39.x (Traefik v3.6.x). Chart 40.x ships Traefik v3.7.1 which currently fails to start its Gateway provider against upstream Gateway API CRDs (it requests `v1.TLSRoute` which exists only at `v1alpha2`/`v1alpha3`).
 
 Verify the pod is bound to the host network:
 

@@ -6,6 +6,7 @@ hostNetwork: true
 providers:
   kubernetesGateway:
     enabled: true
+    experimentalChannel: false
     statusAddress:
       service:
         namespace: traefik
