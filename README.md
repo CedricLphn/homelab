@@ -16,8 +16,8 @@ This repository contains the complete infrastructure-as-code for my personal hom
 - **OS**: [Talos Linux](https://www.talos.dev/) v1.13.2 (immutable, secure, minimal)
 - **Kubernetes**: v1.36.0
 - **Deployment**: Kustomize + ArgoCD (GitOps)
-- **CNI / LB**: [Cilium](https://cilium.io/) (eBPF, kube-proxy replacement, LB-IPAM, L2 announce)
-- **Routing**: [Traefik v3](https://traefik.io/) + [Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/) v1.4
+- **CNI**: [Cilium](https://cilium.io/) (eBPF, kube-proxy replacement)
+- **Routing**: [Traefik v3](https://traefik.io/) (hostNetwork) + [Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/) v1.4
 - **TLS**: [cert-manager](https://cert-manager.io/) with self-signed Homelab Root CA, wildcard `*.homelab.lastsector.lan`
 - **DNS**: the LAN router / DNS server internal DNS (`*.homelab.lastsector.lan`)
 - **Remote access**: WireGuard on the LAN router (out of cluster scope)
@@ -160,7 +160,7 @@ Ce dépôt contient l'infrastructure complète de mon homelab personnel, fonctio
 - **OS** : [Talos Linux](https://www.talos.dev/) v1.13.2 (immuable, sécurisé, minimal)
 - **Kubernetes** : v1.36.0
 - **Déploiement** : Kustomize + ArgoCD (GitOps)
-- **CNI / LB** : [Cilium](https://cilium.io/) (eBPF, kube-proxy replacement, LB-IPAM, L2 announce)
+- **CNI** : [Cilium](https://cilium.io/) (eBPF, kube-proxy replacement)
 - **Routage** : [Traefik v3](https://traefik.io/) + [Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/) v1.4
 - **TLS** : [cert-manager](https://cert-manager.io/) avec une CA racine self-signed, certificat wildcard `*.homelab.lastsector.lan`
 - **DNS** : DNS interne the LAN router / DNS server (`*.homelab.lastsector.lan`)

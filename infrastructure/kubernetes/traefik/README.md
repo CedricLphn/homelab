@@ -15,7 +15,17 @@ Traefik v3 implements the Kubernetes Gateway API in this cluster. A single clust
 
 - Gateway API CRDs installed (`infrastructure/kubernetes/gateway-api/`)
 - cert-manager + Homelab Root CA + ClusterIssuer (`infrastructure/kubernetes/cert-manager/`)
-- Cilium with LB-IPAM pool ready (`infrastructure/kubernetes/cilium/`)
+- Cilium installed (`infrastructure/kubernetes/cilium/`)
+
+## Network exposure model: `hostNetwork`
+
+The Traefik pod runs in `hostNetwork: true` and binds directly to the node's ports `:80` and `:443`. This means the node's primary IP (`10.0.1.3` in this cluster) is the Gateway entry point. No `LoadBalancer` IP, no L2 announcement, no extra subnet required — the wildcard DNS just points at the node IP.
+
+Trade-offs:
+- ✅ Works with a single node IP, no LB-IPAM / no router reconfiguration
+- ✅ Lower latency (no extra service indirection)
+- ⚠️ Only one Traefik replica can run on a given node (ports 80/443 conflict)
+- ⚠️ Ports 80/443 must be free on the node — no other host process can bind them
 
 ## Install Traefik via Helm
 
@@ -30,15 +40,12 @@ helm install traefik traefik/traefik \
   --values infrastructure/kubernetes/traefik/values.yaml
 ```
 
-Verify Traefik installed and got a LoadBalancer IP from Cilium:
+Verify the pod is bound to the host network:
 
 ```bash
-kubectl get pods -n traefik
-kubectl get svc -n traefik traefik
-# EXTERNAL-IP should match a value from the CiliumLoadBalancerIPPool
+kubectl get pods -n traefik -o wide        # IP column should equal node IP
+kubectl exec -n traefik deploy/traefik -- ss -tlnp | grep -E ':80|:443'
 ```
-
-The `io.cilium/lb-l2-announce: "true"` label on the Service makes Cilium L2-announce the IP on the LAN.
 
 ## Apply the Gateway + wildcard cert
 
@@ -56,14 +63,18 @@ kubectl get gatewayclass traefik                               # Accepted=True
 kubectl get gateway homelab-gateway -n traefik                 # Programmed=True, address listed
 ```
 
-## DNS — router
+## DNS — LAN router
 
-On the LAN router, add a static DNS entry pointing the wildcard to the Traefik LoadBalancer IP, and allow remote DNS queries (needed for WireGuard clients):
+On the LAN router, add a static DNS entry mapping the wildcard to the node's IP, and allow remote DNS queries (needed for WireGuard clients).
+
+For RouterOS-flavored CLIs:
 
 ```
 /ip dns set allow-remote-requests=yes
-/ip dns static add regexp="^.+\\.internal\\.example\\.lan\\\$" address=<TRAEFIK-LB-IP>
+/ip dns static add regexp="^.+\\.homelab\\.lastsector\\.lan\\\$" address=<NODE-IP>
 ```
+
+For other routers (Pi-hole, AdGuard, OPNsense/Unbound) use their equivalent "local DNS / static A" feature with the same wildcard → node IP.
 
 ## Smoke test
 

@@ -1,18 +1,20 @@
-# Cilium — CNI + LB-IPAM + L2 announce
+# Cilium — CNI + kube-proxy replacement (eBPF)
 
-Cilium replaces Flannel (CNI), kube-proxy (eBPF service routing), and MetalLB (LoadBalancer IPAM + L2 ARP). One mobile piece instead of three.
+Cilium replaces Flannel (CNI) and kube-proxy (eBPF service routing).
+
+Ingress / LoadBalancer is handled by Traefik in `hostNetwork` mode (binds directly to the node IP), so no LB-IPAM or L2 announcement is needed here.
 
 ## What this provides
 
-- LoadBalancer service IPs allocated from a LAN-side pool (`CiliumLoadBalancerIPPool`)
-- L2 ARP announcements so the LAN routes the LoadBalancer IP to the cluster node (`CiliumL2AnnouncementPolicy`)
-- eBPF kube-proxy replacement (faster, no iptables service rules)
+- CNI: pod networking, NetworkPolicy, identity-based security
+- Service routing: eBPF replacement for kube-proxy (`kubeProxyReplacement: true`)
+- Optional observability: Hubble Relay (Hubble UI disabled)
 
-Cilium itself is installed out-of-band via Helm (matches the External Secrets pattern in this repo). Only the homelab-specific pool/announce config is GitOps-managed here.
+Cilium itself is installed out-of-band via Helm (matches the External Secrets pattern in this repo). There is no homelab-specific Cilium config in this directory beyond `values.yaml` — the Kustomize resource list is intentionally empty.
 
 ## Prerequisites — Talos machine config
 
-Cilium expects Flannel and kube-proxy to be disabled. Patch `private/talos/controlplane.yaml`:
+Cilium expects Flannel and kube-proxy to be disabled. Patch `private/talos/controlplane.yaml` (see `infrastructure/talos/patches/cilium-cni.yaml`):
 
 ```yaml
 cluster:
@@ -50,39 +52,8 @@ cilium status --wait
 kubectl get pods -n kube-system -l k8s-app=cilium
 ```
 
-## Apply the homelab pool + L2 announce
-
-Before applying, edit `lb-ip-pool.yaml` and `l2-announcement.yaml`:
-
-- `<LAN-LB-CIDR>` → a free CIDR on your LAN reserved for LoadBalancer IPs (e.g. `192.168.1.240/29` → 8 IPs `.240`–`.247`). It MUST NOT overlap the DHCP range of your router.
-- `<NODE-NETWORK-INTERFACE>` → the NIC name on the Talos node (e.g. `eth0`, `eno1`, `enp1s0`). Check with `talosctl get links --nodes <CONTROL-PLANE-IP>`.
-
-Deployed by ArgoCD via `argocd-apps/cilium.yaml`. Manual apply:
-
-```bash
-kubectl apply -k infrastructure/kubernetes/cilium/
-```
-
-Verify:
-
-```bash
-kubectl get ciliumloadbalancerippool homelab-lan-pool
-kubectl get ciliuml2announcementpolicy homelab-l2-announce
-```
-
-## Validate with a test LoadBalancer
-
-```bash
-kubectl create deploy nginx-test --image=nginx --port=80
-kubectl expose deploy nginx-test --type=LoadBalancer --port=80
-kubectl label svc nginx-test io.cilium/lb-l2-announce=true
-kubectl get svc nginx-test                # EXTERNAL-IP from the pool
-curl http://<EXTERNAL-IP>                 # nginx welcome page
-kubectl delete deploy,svc nginx-test
-```
-
 ## Notes
 
-- Cilium ignores the `node.kubernetes.io/exclude-from-external-load-balancers` label that MetalLB respects, so a single-node control-plane works out of the box for L2 announce.
-- `loadBalancer.mode: snat` is the default and works on any NIC. `dsr` is faster but requires NIC support — switch later if benchmarks show benefit.
+- `kubeProxyReplacement: true` + `k8sServiceHost: 127.0.0.1` + `k8sServicePort: 7445` rely on Talos KubePrism (local API LB on the node).
 - Hubble UI is disabled to keep the footprint small. Enable it later by setting `hubble.ui.enabled: true` and reinstalling.
+- No `CiliumLoadBalancerIPPool` or `CiliumL2AnnouncementPolicy` because Traefik exposes itself via `hostNetwork` on the node IP — no LoadBalancer Services in use.

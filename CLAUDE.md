@@ -11,10 +11,10 @@ Personal homelab infrastructure-as-code running self-hosted applications on a ba
 - **OS**: Talos Linux v1.13.2 (immutable, API-driven, no SSH)
 - **Kubernetes**: v1.36.0
 - **Deployment**: Kustomize (no Helm for apps; infra components like Cilium/cert-manager/Traefik installed by Helm out-of-band, only homelab config GitOps-managed)
-- **CNI / Service LB**: Cilium (eBPF, kube-proxy-replacement, LB-IPAM, L2 announcements). Talos machine config has `cluster.network.cni.name=none` and `cluster.proxy.disabled=true`
-- **Routing**: Traefik v3 implementing Kubernetes Gateway API v1.4 (`HTTPRoute`, not legacy `Ingress`)
+- **CNI / kube-proxy**: Cilium (eBPF kube-proxy-replacement). Talos machine config has `cluster.network.cni.name=none` and `cluster.proxy.disabled=true`. No LB-IPAM / no L2 announce — see ingress model below
+- **Routing**: Traefik v3 implementing Kubernetes Gateway API v1.4 (`HTTPRoute`, not legacy `Ingress`). Runs in `hostNetwork: true`, binds directly to the node's ports 80/443
 - **TLS**: cert-manager with self-signed Homelab Root CA (`homelab-ca-issuer` ClusterIssuer). Wildcard cert `*.homelab.lastsector.lan` on the Gateway listener
-- **DNS**: the LAN router / DNS server resolves `*.homelab.lastsector.lan` → Cilium LB-IPAM IP
+- **DNS**: the LAN router / DNS server resolves `*.homelab.lastsector.lan` → node IP
 - **Remote access**: WireGuard on the LAN router (outside the cluster)
 - **Storage**: local-path-provisioner (StorageClass: `local-path`)
 - **Secrets**: Bitwarden Secrets Manager via External Secrets Operator
@@ -36,7 +36,7 @@ homelab/
 ├── infrastructure/
 │   ├── talos/                  # Talos config templates (.example files) + patches
 │   └── kubernetes/
-│       ├── cilium/             # Cilium LB-IPAM pool + L2 announcement
+│       ├── cilium/             # Cilium Helm values (no in-cluster resources)
 │       ├── gateway-api/        # Gateway API v1.4 CRDs
 │       ├── cert-manager/       # Homelab Root CA + ClusterIssuer
 │       ├── traefik/            # Traefik Gateway + wildcard cert
@@ -106,7 +106,7 @@ spec:
           port: <port>
 ```
 
-URLs: `https://<app>.homelab.lastsector.lan` (resolved by LAN DNS to the Cilium LB-IPAM IP).
+URLs: `https://<app>.homelab.lastsector.lan` (resolved by LAN DNS to the node IP).
 
 **No `ReferenceGrant` needed**: the Gateway allows routes from all namespaces (`allowedRoutes.namespaces.from: All`) and backends live in the same namespace as the HTTPRoute.
 
@@ -310,7 +310,7 @@ If `https://<app>.homelab.lastsector.lan` returns 404 or never connects:
    kubectl describe gateway homelab-gateway -n traefik
    ```
 3. Check Traefik picked it up: `kubectl logs -n traefik deploy/traefik | grep -i <app>`
-4. DNS: `dig +short <app>.homelab.lastsector.lan` must return the Cilium LB-IPAM IP
+4. DNS: `dig +short <app>.homelab.lastsector.lan` must return the node IP
 
 ### Certificate Not Ready
 If the wildcard cert or any per-app Certificate is `Ready=False`:
@@ -321,14 +321,14 @@ kubectl logs -n cert-manager deploy/cert-manager
 ```
 Common cause: missing or broken `homelab-ca-issuer` ClusterIssuer (check `homelab-root-ca` secret exists in `cert-manager` namespace).
 
-### Cilium LoadBalancer IP Not Reachable
-If the Traefik Service shows EXTERNAL-IP but the IP doesn't respond:
+### Traefik Not Reachable on Node IP
+If `https://<app>.homelab.lastsector.lan` times out and DNS resolves correctly to the node IP:
 ```bash
-kubectl get ciliuml2announcementpolicy
-kubectl get ciliumloadbalancerippool
-cilium status
+kubectl get pods -n traefik -o wide                # IP should equal node IP (hostNetwork)
+kubectl exec -n traefik deploy/traefik -- ss -tlnp  # ports 80 and 443 listening
+cilium status                                       # Cilium agent healthy
 ```
-Check the `interfaces:` list in `homelab-l2-announce` matches the actual NIC name on the node (`talosctl get links --nodes <CONTROL-PLANE-IP>`).
+Common cause: another host process bound to :80 or :443 on the node (Tailscale operator, NodePort range collision). Talos doesn't run extra services, so usually nothing else competes.
 
 ## Security & Sensitive Data
 

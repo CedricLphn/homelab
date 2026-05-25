@@ -9,16 +9,6 @@ cni:
 ipam:
   mode: kubernetes
 
-l2announcements:
-  enabled: true
-
-externalIPs:
-  enabled: true
-
-loadBalancer:
-  acceleration: native
-  mode: snat
-
 operator:
   replicas: 1
   rollOutPods: true

@@ -17,12 +17,12 @@ This homelab is built on a **bare-metal Kubernetes cluster** running **Talos Lin
 │  Client (LAN or WireGuard via router)                     │
 │  https://<app>.homelab.lastsector.lan                      │
 └────────────────────┬────────────────────────────────────────┘
-                     │ DNS (router) → Cilium LB-IPAM IP
+                     │ DNS (router) → node IP
                      │ TLS via Homelab CA (cert-manager)
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
 │            Traefik (Gateway API v1.4 implementer)           │
-│  Service type LoadBalancer ← Cilium L2 announce on LAN      │
+│  hostNetwork pod ← bind direct sur le node IP on ports 80/443      │
 │  Gateway homelab-gateway (HTTPS listener, wildcard cert)    │
 │  Routes via HTTPRoute per app                               │
 └────────────────────┬────────────────────────────────────────┘
@@ -170,7 +170,7 @@ Application Pods
 - A single cluster-wide `Gateway` (`homelab-gateway`) with HTTPS listener
 - One `HTTPRoute` per application attaching to the Gateway
 - Each service is reachable at `https://<service>.homelab.lastsector.lan`
-- Cilium's `Service type=LoadBalancer` exposes Traefik on a LAN IP via L2 announce
+- Cilium's `hostNetwork: true` binds Traefik directly to the node IP on ports 80/443
 
 #### 6. Authentication: Authelia (OIDC/OAuth2)
 
@@ -256,7 +256,7 @@ Each app in `apps/` follows this pattern:
 ```
 User Device (LAN or WireGuard via router)
     ↓
-LAN DNS resolves *.homelab.lastsector.lan → Cilium LB-IPAM IP
+LAN DNS resolves *.homelab.lastsector.lan → node IP
     ↓
 Traefik Gateway (TLS terminate, homelab CA)
     ↓
@@ -391,12 +391,12 @@ Ce homelab est construit sur un **cluster Kubernetes bare-metal** exécutant **T
 │  Client (LAN ou WireGuard via router)                     │
 │  https://<app>.homelab.lastsector.lan                      │
 └────────────────────┬────────────────────────────────────────┘
-                     │ DNS (router) → IP Cilium LB-IPAM
+                     │ DNS (router) → IP du node
                      │ TLS via CA homelab (cert-manager)
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
 │       Traefik (implémentation Gateway API v1.4)             │
-│  Service type LoadBalancer ← Cilium L2 announce sur LAN     │
+│  hostNetwork pod ← bind direct sur le node IP sur les ports 80/443     │
 │  Gateway homelab-gateway (listener HTTPS, cert wildcard)    │
 │  Routes via HTTPRoute par app                               │
 └────────────────────┬────────────────────────────────────────┘
@@ -631,7 +631,7 @@ Chaque app dans `apps/` suit ce pattern :
 ```
 Appareil utilisateur (LAN ou WireGuard via router)
     ↓
-DNS interne résout *.homelab.lastsector.lan → IP Cilium LB-IPAM
+DNS interne résout *.homelab.lastsector.lan → IP du node
     ↓
 Traefik Gateway (terminate TLS, CA homelab)
     ↓
