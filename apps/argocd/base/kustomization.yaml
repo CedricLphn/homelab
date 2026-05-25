@@ -26,6 +26,12 @@ patches:
     target:
       kind: Secret
       name: argocd-secret
+  - target:
+      kind: Deployment
+    patch: |
+      - op: add
+        path: /spec/revisionHistoryLimit
+        value: 2
 
 labels:
   - pairs:

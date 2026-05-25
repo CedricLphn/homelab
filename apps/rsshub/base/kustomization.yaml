@@ -13,3 +13,11 @@ labels:
   - pairs:
       app.kubernetes.io/managed-by: kustomize
       app.kubernetes.io/part-of: rsshub
+
+patches:
+  - target:
+      kind: Deployment
+    patch: |
+      - op: add
+        path: /spec/revisionHistoryLimit
+        value: 2

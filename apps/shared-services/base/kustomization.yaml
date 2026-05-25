@@ -16,3 +16,11 @@ resources:
 labels:
 - pairs:
     app.kubernetes.io/part-of: shared-services
+
+patches:
+  - target:
+      kind: Deployment
+    patch: |
+      - op: add
+        path: /spec/revisionHistoryLimit
+        value: 2

@@ -14,3 +14,11 @@ resources:
 labels:
   - pairs:
       app.kubernetes.io/managed-by: kustomize
+
+patches:
+  - target:
+      kind: Deployment
+    patch: |
+      - op: add
+        path: /spec/revisionHistoryLimit
+        value: 2
