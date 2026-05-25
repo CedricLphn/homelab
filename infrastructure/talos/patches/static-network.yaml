@@ -1,0 +1,14 @@
+machine:
+  network:
+    interfaces:
+      - interface: ens18
+        dhcp: false
+        addresses:
+          - 10.0.1.3/24
+        routes:
+          - network: 0.0.0.0/0
+            gateway: 10.0.1.1
+        mtu: 1500
+    nameservers:
+      - 10.0.1.1
+      - 1.1.1.1
